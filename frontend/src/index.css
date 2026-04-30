@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Font size presets */
+  body.font-sm { font-size: 13px; }
+  body.font-md { font-size: 15px; }
+  body.font-lg { font-size: 17px; }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(120, 120, 140, 0.35);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #e85d3a; }
+
+  /* Minimalist mode */
+  body.minimalist .nav-sidebar { display: none !important; }
+  body.minimalist .threads-header-icons { display: none !important; }
+  body.minimalist .btn-ghost { border-radius: 8px !important; }
+  body.minimalist .bg-base-200 { background: var(--b1) !important; }
+}
