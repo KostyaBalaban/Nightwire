@@ -1,3 +1,4 @@
+import { randomInt } from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "./user.schema.js";
@@ -43,7 +44,7 @@ export async function createAccount({ fullName, email, password, publicKey }) {
 }
 
 export async function generateVerificationCode(userId) {
-  const code = Math.floor(100_000 + Math.random() * 900_000).toString();
+  const code = randomInt(100_000, 1_000_000).toString();
   const expiry = new Date(Date.now() + 15 * 60 * 1000);
   await User.findByIdAndUpdate(userId, {
     emailVerificationCode: code,

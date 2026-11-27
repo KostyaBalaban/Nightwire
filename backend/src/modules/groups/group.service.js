@@ -117,7 +117,7 @@ export async function getGroupMessages(groupId, userId) {
 
   return Message.find({ groupId })
     .populate("senderId", "fullName profilePic")
-    .populate("replyTo", "text image senderId isDeletedForEveryone")
+    .populate("replyTo", "text image senderId isEncrypted isDeletedForEveryone")
     .sort({ createdAt: 1 });
 }
 
@@ -143,7 +143,7 @@ export async function sendGroupMessage({ groupId, senderId, text, image, fileUrl
 
   return Message.findById(msg._id)
     .populate("senderId", "fullName profilePic")
-    .populate("replyTo", "text image senderId isDeletedForEveryone");
+    .populate("replyTo", "text image senderId isEncrypted isDeletedForEveryone");
 }
 
 export async function createSystemMessage(groupId, senderId, text) {
@@ -164,6 +164,8 @@ export async function updateMemberRole(groupId, ownerId, targetUserId, newRole) 
     throw { status: 403, message: "Only owner can update roles" };
   if (String(targetUserId) === String(ownerId))
     throw { status: 400, message: "Cannot change owner role" };
+  if (!["admin", "member"].includes(newRole))
+    throw { status: 400, message: "Role must be admin or member" };
 
   const member = group.members.find((m) => String(m.userId) === String(targetUserId));
   if (!member) throw { status: 404, message: "Member not found" };

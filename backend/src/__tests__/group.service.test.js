@@ -19,7 +19,7 @@ jest.unstable_mockModule("../vault/vault.js", () => ({
   uploadToVault: mockUploadToVault,
 }));
 
-const { createGroup, joinGroupByInvite } = await import(
+const { createGroup, joinGroupByInvite, updateMemberRole } = await import(
   "../modules/groups/group.service.js"
 );
 
@@ -88,5 +88,21 @@ describe("joinGroupByInvite", () => {
       status: 404,
       message: "Invalid invite code",
     });
+  });
+});
+
+describe("updateMemberRole", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test("shouldRejectOwnerRole — a second owner cannot be created through role updates", async () => {
+    MockGroup.findById.mockReturnValueOnce(mockQuery({
+      _id: "g1",
+      ownerId: "owner1",
+      members: [{ userId: "owner1", role: "owner" }, { userId: "u2", role: "member" }],
+      save: jest.fn(),
+    }));
+
+    await expect(updateMemberRole("g1", "owner1", "u2", "owner"))
+      .rejects.toMatchObject({ status: 400 });
   });
 });

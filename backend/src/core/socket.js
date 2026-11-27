@@ -2,6 +2,19 @@ import { Server } from "socket.io";
 import { User }    from "../modules/auth/user.schema.js";
 import { Message } from "../modules/messaging/message.schema.js";
 import { Group }   from "../modules/groups/group.schema.js";
+import { resolveSessionUser, SESSION_COOKIE } from "../guards/session.guard.js";
+
+function readCookie(header, name) {
+  for (const part of (header || "").split(";")) {
+    const idx = part.indexOf("=");
+    if (idx === -1) continue;
+    if (part.slice(0, idx).trim() === name) {
+      try { return decodeURIComponent(part.slice(idx + 1).trim()); }
+      catch { return null; }
+    }
+  }
+  return null;
+}
 
 // userId (string) → socketId
 const onlineMap  = new Map();
@@ -15,8 +28,21 @@ export function initSocket(httpServer) {
     cors: { origin: process.env.CLIENT_URL, credentials: true },
   });
 
+  // Authenticate every connection with the same httpOnly session cookie as the REST API.
+  // The user id is taken from the verified JWT, never from client-supplied data.
+  io.use(async (socket, next) => {
+    try {
+      const token = readCookie(socket.handshake.headers.cookie, SESSION_COOKIE);
+      const user = await resolveSessionUser(token);
+      socket.data.userId = String(user._id);
+      next();
+    } catch (err) {
+      next(new Error(err.message || "Unauthorized"));
+    }
+  });
+
   io.on("connection", async (socket) => {
-    const userId = socket.handshake.query.userId;
+    const userId = socket.data.userId;
 
     if (userId) {
       onlineMap.set(userId, socket.id);
@@ -64,10 +90,12 @@ export function initSocket(httpServer) {
 
     // --- group typing ---
     socket.on("group:typing:start", ({ groupId }) => {
+      if (!socket.rooms.has(`group:${groupId}`)) return;
       socket.to(`group:${groupId}`).emit("group:typing:start", { senderId: userId, groupId });
     });
 
     socket.on("group:typing:stop", ({ groupId }) => {
+      if (!socket.rooms.has(`group:${groupId}`)) return;
       socket.to(`group:${groupId}`).emit("group:typing:stop", { senderId: userId, groupId });
     });
 

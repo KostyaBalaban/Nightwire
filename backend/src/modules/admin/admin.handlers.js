@@ -149,7 +149,7 @@ export async function updateReport(req, res) {
     const report = await Report.findByIdAndUpdate(
       req.params.id,
       { status, adminNote },
-      { new: true }
+      { new: true, runValidators: true }
     ).populate("reporterId", "fullName email");
     if (!report) return fail(res, "Report not found", 404);
     return ok(res, { report });

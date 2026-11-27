@@ -33,6 +33,13 @@ export async function getGroupHandler(req, res) {
   try {
     const group = await getGroupById(req.params.id);
     if (!group) return fail(res, "Group not found", 404);
+
+    // Only members may see the member list and invite code
+    const isMember = group.members.some(
+      (m) => String(m.userId?._id ?? m.userId) === String(req.user._id)
+    );
+    if (!isMember) return fail(res, "Not a member", 403);
+
     return ok(res, { group });
   } catch (err) {
     return fail(res, err.message, err.status || 500);
