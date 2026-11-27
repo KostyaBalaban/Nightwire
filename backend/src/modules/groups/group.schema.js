@@ -18,7 +18,6 @@ const groupSchema = new mongoose.Schema(
     ownerId:     { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     members:     [memberSchema],
     inviteCode:  { type: String, unique: true, default: () => randomUUID().slice(0, 8) },
-    isPublic:    { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -13,7 +13,6 @@ const messageSchema = new mongoose.Schema(
     senderId:   { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     receiverId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     groupId:    { type: mongoose.Schema.Types.ObjectId, ref: "Group" },
-    channelId:  { type: mongoose.Schema.Types.ObjectId, ref: "Channel" },
 
     text:  { type: String, default: "" },
     image: { type: String, default: "" },

@@ -1,6 +1,6 @@
 import { ok, fail } from "../../helpers/response.js";
 import { getIO, getSocketId, joinGroupRoom, leaveGroupRoom } from "../../core/socket.js";
-import { uploadFileToVault } from "../../vault/vault.js";
+import { uploadToVault, uploadFileToVault } from "../../vault/vault.js";
 import {
   createGroup,
   getGroupById,
@@ -131,7 +131,6 @@ export async function sendGroupMessageHandler(req, res) {
       const uploaded = await uploadFileToVault(fileData, fileType, { folder: "nightwire/files" });
       resolvedFileUrl = uploaded.secure_url;
     } else if (fileData && fileType === "image") {
-      const { uploadToVault } = await import("../../vault/vault.js");
       const uploaded = await uploadToVault(fileData, { folder: "nightwire/messages" });
       resolvedImage = uploaded.secure_url;
     }
