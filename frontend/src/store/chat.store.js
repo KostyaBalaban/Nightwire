@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
-import { decryptMessage, loadPrivateKey, cacheSentPlaintext, loadSentPlaintext } from "../lib/crypto.js";
+import { decryptMessage, encryptMessage, loadPrivateKey, cacheSentPlaintext, loadSentPlaintext } from "../lib/crypto.js";
 import { useSessionStore } from "./session.store.js";
 
 const ENCRYPTED_PLACEHOLDER = "🔒 Encrypted message";
@@ -15,39 +15,35 @@ async function tryDecrypt(text, privKey) {
   return isBadDecrypt(result) ? ENCRYPTED_PLACEHOLDER : result;
 }
 
-// Only decrypt messages received by currentUser (sent by someone else).
-// Own sent messages were encrypted with the recipient's key — we can't decrypt them.
+function currentUserId() {
+  return String(useSessionStore.getState().user?._id ?? "");
+}
+
+// Own sent messages were encrypted with the recipient's key, so we can't decrypt
+// them — their plaintext comes from the local cache filled when they were sent.
+// Messages received from someone else are decrypted with our private key.
+async function plaintextFor(m, privKey, myId) {
+  const senderId = String(m.senderId?._id ?? m.senderId ?? "");
+  if (senderId === myId) return loadSentPlaintext(m._id) ?? ENCRYPTED_PLACEHOLDER;
+  return tryDecrypt(m.text, privKey);
+}
+
+// Returns a copy of a message with its text (and quoted message text) readable.
+export async function decryptForDisplay(m, privKey = loadPrivateKey(), myId = currentUserId()) {
+  let result = m;
+  if (m.isEncrypted && m.text) {
+    result = { ...result, text: await plaintextFor(m, privKey, myId) };
+  }
+  if (m.replyTo?.isEncrypted && m.replyTo?.text) {
+    result = { ...result, replyTo: { ...m.replyTo, text: await plaintextFor(m.replyTo, privKey, myId) } };
+  }
+  return result;
+}
+
 async function decryptMessages(messages) {
   const privKey = loadPrivateKey();
-  const currentUserId = String(useSessionStore.getState().user?._id ?? "");
-
-  return Promise.all(
-    messages.map(async (m) => {
-      let result = m;
-
-      if (m.isEncrypted && m.text) {
-        const senderId = String(m.senderId?._id ?? m.senderId ?? "");
-        const isMine = senderId === currentUserId;
-        if (isMine) {
-          // own message — encrypted with recipient's key, can't decrypt
-          // check local plaintext cache first (populated when message was sent)
-          const cached = loadSentPlaintext(m._id);
-          result = { ...result, text: cached ?? ENCRYPTED_PLACEHOLDER };
-        } else {
-          result = { ...result, text: await tryDecrypt(m.text, privKey) };
-        }
-      }
-
-      if (m.replyTo?.isEncrypted && m.replyTo?.text) {
-        result = {
-          ...result,
-          replyTo: { ...m.replyTo, text: await tryDecrypt(m.replyTo.text, privKey) },
-        };
-      }
-
-      return result;
-    })
-  );
+  const myId = currentUserId();
+  return Promise.all(messages.map((m) => decryptForDisplay(m, privKey, myId)));
 }
 
 export const useChatStore = create((set, get) => ({
@@ -149,8 +145,10 @@ export const useChatStore = create((set, get) => ({
     const { activeUser, messages, replyTo } = get();
     // _localText is the original plaintext for sender's own display
     const { _localText, ...serverPayload } = payload;
-    // attach plain-text snippet of the quoted message so the recipient can display it
-    if (replyTo?.text) serverPayload.replyToSnippet = replyTo.text;
+    // Attach a plain-text snippet of the quoted message so the recipient can display it.
+    // Never for encrypted messages: the snippet is stored on the server in plain text.
+    // The recipient resolves encrypted quotes locally from the populated replyTo instead.
+    if (replyTo?.text && !replyTo.isEncrypted) serverPayload.replyToSnippet = replyTo.text;
     const { data } = await axiosInstance.post(`/messages/send/${activeUser._id}`, {
       ...serverPayload,
       replyTo: replyTo?._id ?? null,
@@ -170,10 +168,25 @@ export const useChatStore = create((set, get) => ({
   },
 
   editMessage: async (messageId, text) => {
-    const { data } = await axiosInstance.patch(`/messages/${messageId}`, { text });
+    const { activeUser, messages } = get();
+    const original = messages.find((m) => String(m._id) === String(messageId));
+
+    // An edit of an encrypted message must be encrypted too, otherwise the new
+    // text would reach the server in plain text.
+    let serverText = text;
+    if (original?.isEncrypted) {
+      if (!activeUser?.publicKey) throw new Error("Recipient has no public key");
+      serverText = await encryptMessage(text, activeUser.publicKey);
+    }
+
+    const { data } = await axiosInstance.patch(`/messages/${messageId}`, { text: serverText });
+    if (original?.isEncrypted) cacheSentPlaintext(messageId, text);
+
     set((s) => ({
       messages: s.messages.map((m) =>
-        String(m._id) === String(messageId) ? data.message : m
+        String(m._id) === String(messageId)
+          ? { ...m, text, isEdited: data.message.isEdited, editedAt: data.message.editedAt }
+          : m
       ),
       editingMessage: null,
     }));
@@ -223,10 +236,14 @@ export const useChatStore = create((set, get) => ({
     get()._updatePreview(fromId, msg);
   },
 
+  // updatedMsg.text must already be decrypted (see useSocket). Only the edited
+  // fields are applied so the already-decrypted reply quote is kept.
   applyMessageEdit: (updatedMsg) => {
     set((s) => ({
       messages: s.messages.map((m) =>
-        String(m._id) === String(updatedMsg._id) ? updatedMsg : m
+        String(m._id) === String(updatedMsg._id)
+          ? { ...m, text: updatedMsg.text, isEdited: updatedMsg.isEdited, editedAt: updatedMsg.editedAt }
+          : m
       ),
     }));
   },

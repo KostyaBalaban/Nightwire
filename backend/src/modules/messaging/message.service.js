@@ -14,7 +14,7 @@ export async function getConversation(userId, partnerId) {
       { senderId: partnerId, receiverId: userId },
     ],
   })
-    .populate("replyTo", "text image senderId isDeletedForEveryone")
+    .populate("replyTo", "text image senderId isEncrypted isDeletedForEveryone")
     .sort({ createdAt: 1 });
 }
 
@@ -44,7 +44,7 @@ export async function createMessage({ senderId, receiverId, text, image, fileDat
     replyToSnippet: replyToSnippet || "",
   });
 
-  return msg.populate("replyTo", "text image senderId isDeletedForEveryone");
+  return msg.populate("replyTo", "text image senderId isEncrypted isDeletedForEveryone");
 }
 
 export async function editMessage(messageId, userId, newText) {
@@ -59,7 +59,7 @@ export async function editMessage(messageId, userId, newText) {
   msg.isEdited = true;
   msg.editedAt = new Date();
   await msg.save();
-  return msg.populate("replyTo", "text image senderId isDeletedForEveryone");
+  return msg.populate("replyTo", "text image senderId isEncrypted isDeletedForEveryone");
 }
 
 export async function deleteMessage(messageId, userId, forEveryone) {
@@ -112,7 +112,7 @@ export async function toggleReaction(messageId, userId, emoji) {
   }
 
   await msg.save();
-  return msg.populate("replyTo", "text image senderId isDeletedForEveryone");
+  return msg.populate("replyTo", "text image senderId isEncrypted isDeletedForEveryone");
 }
 
 export async function clearChat(userId, partnerId) {

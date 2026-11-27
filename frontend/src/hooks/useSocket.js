@@ -1,10 +1,9 @@
 import { useEffect } from "react";
 import { socket }          from "../lib/socket.js";
-import { useChatStore }    from "../store/chat.store.js";
+import { useChatStore, decryptForDisplay } from "../store/chat.store.js";
 import { useSessionStore } from "../store/session.store.js";
 import { useGroupStore }   from "../store/group.store.js";
 import { useSound }        from "./useSound.js";
-import { decryptMessage, loadPrivateKey } from "../lib/crypto.js";
 
 export function useSocket() {
   const user       = useSessionStore((s) => s.user);
@@ -31,22 +30,13 @@ export function useSocket() {
   useEffect(() => {
     if (!user) return;
 
-    socket.io.opts.query = { userId: user._id };
+    // The server identifies the user from the httpOnly session cookie.
     socket.connect();
 
     const onOnlineUsers = (ids) => setOnlineUsers(ids);
 
-    const onNewMessage = async (msg) => {
-      if (msg.isEncrypted && msg.text) {
-        const pk = loadPrivateKey();
-        const dec = pk ? await decryptMessage(msg.text, pk) : null;
-        msg = { ...msg, text: (dec && !dec.startsWith("[")) ? dec : "🔒 Encrypted message" };
-      }
-      if (msg.replyTo?.isEncrypted && msg.replyTo?.text) {
-        const pk = loadPrivateKey();
-        const dec = pk ? await decryptMessage(msg.replyTo.text, pk) : null;
-        msg = { ...msg, replyTo: { ...msg.replyTo, text: (dec && !dec.startsWith("[")) ? dec : "🔒" } };
-      }
+    const onNewMessage = async (incoming) => {
+      const msg = await decryptForDisplay(incoming);
       receiveMessage(msg);
 
       const currentActive = useChatStore.getState().activeUser;
@@ -70,7 +60,7 @@ export function useSocket() {
     const onTypingStart   = ({ senderId }) => setTyping(senderId, true);
     const onTypingStop    = ({ senderId }) => setTyping(senderId, false);
     const onMsgsRead      = (data)         => applyMessagesRead(data);
-    const onMsgEdit       = ({ message })  => applyMessageEdit(message);
+    const onMsgEdit       = async ({ message }) => applyMessageEdit(await decryptForDisplay(message));
     const onMsgDelete     = (data)         => applyMessageDelete(data);
     const onMsgReaction   = (data)         => applyReaction(data);
 

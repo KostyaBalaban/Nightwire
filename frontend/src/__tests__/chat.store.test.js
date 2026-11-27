@@ -11,6 +11,7 @@ vi.mock("../lib/axios.js", () => ({
 
 vi.mock("../lib/crypto.js", () => ({
   decryptMessage:      vi.fn(),
+  encryptMessage:      vi.fn().mockResolvedValue("CIPHERTEXT"),
   loadPrivateKey:      vi.fn().mockReturnValue(null),
   cacheSentPlaintext:  vi.fn(),
   loadSentPlaintext:   vi.fn().mockReturnValue(null),
@@ -22,7 +23,9 @@ vi.mock("../store/session.store.js", () => ({
   },
 }));
 
-import { useChatStore } from "../store/chat.store.js";
+import { useChatStore, decryptForDisplay } from "../store/chat.store.js";
+import { axiosInstance } from "../lib/axios.js";
+import { encryptMessage, cacheSentPlaintext, loadSentPlaintext } from "../lib/crypto.js";
 
 const INITIAL = {
   messages:     [],
@@ -94,5 +97,64 @@ describe("markAsRead", () => {
     expect(messages[0].status).toBe("read");
     expect(messages[1].status).toBe("read");
     expect(messages[2].status).toBe("read");
+  });
+});
+
+describe("E2E: no plaintext leaks to the server", () => {
+  test("editMessage — encrypts the new text when the original message was encrypted", async () => {
+    useChatStore.setState({
+      activeUser: { _id: "user2", publicKey: "PUB" },
+      messages: [{ _id: "m1", senderId: "user1", text: "old", isEncrypted: true }],
+    });
+    axiosInstance.patch.mockResolvedValueOnce({ data: { message: { _id: "m1", isEdited: true, editedAt: "t" } } });
+
+    await useChatStore.getState().editMessage("m1", "new secret");
+
+    expect(encryptMessage).toHaveBeenCalledWith("new secret", "PUB");
+    expect(axiosInstance.patch).toHaveBeenCalledWith("/messages/m1", { text: "CIPHERTEXT" });
+    expect(cacheSentPlaintext).toHaveBeenCalledWith("m1", "new secret");
+    expect(useChatStore.getState().messages[0].text).toBe("new secret");
+  });
+
+  test("editMessage — keeps plain text for messages that were not encrypted", async () => {
+    encryptMessage.mockClear();
+    useChatStore.setState({
+      activeUser: { _id: "user2", publicKey: "PUB" },
+      messages: [{ _id: "m2", senderId: "user1", text: "old", isEncrypted: false }],
+    });
+    axiosInstance.patch.mockResolvedValueOnce({ data: { message: { _id: "m2", isEdited: true } } });
+
+    await useChatStore.getState().editMessage("m2", "plain");
+
+    expect(encryptMessage).not.toHaveBeenCalled();
+    expect(axiosInstance.patch).toHaveBeenCalledWith("/messages/m2", { text: "plain" });
+  });
+
+  test("sendMessage — does not send a plain-text snippet when quoting an encrypted message", async () => {
+    useChatStore.setState({
+      activeUser: { _id: "user2" },
+      messages: [],
+      replyTo: { _id: "q1", text: "quoted secret", isEncrypted: true },
+    });
+    axiosInstance.post.mockResolvedValueOnce({ data: { message: { _id: "m3", isEncrypted: true, replyTo: { _id: "q1" } } } });
+
+    await useChatStore.getState().sendMessage({ text: "CIPHERTEXT", isEncrypted: true, _localText: "reply" });
+
+    const body = axiosInstance.post.mock.calls.at(-1)[1];
+    expect(body.replyToSnippet).toBeUndefined();
+    expect(JSON.stringify(body)).not.toContain("quoted secret");
+  });
+
+  test("decryptForDisplay — resolves a quote of my own encrypted message from the local cache", async () => {
+    loadSentPlaintext.mockReturnValueOnce("my original text");
+    const msg = {
+      _id: "m4", senderId: "user2", text: "", isEncrypted: false,
+      replyTo: { _id: "q2", senderId: "user1", text: "CIPHERTEXT", isEncrypted: true },
+    };
+
+    const result = await decryptForDisplay(msg, null, "user1");
+
+    expect(loadSentPlaintext).toHaveBeenCalledWith("q2");
+    expect(result.replyTo.text).toBe("my original text");
   });
 });
