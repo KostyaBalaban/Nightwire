@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -34,6 +37,22 @@ export function buildApp() {
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", ts: Date.now() });
   });
+
+  // Unknown API routes return JSON instead of falling through to the SPA
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ success: false, message: "Not found" });
+  });
+
+  // Serve the built frontend (frontend/dist) from the same origin when it exists,
+  // so a single service hosts the API, Socket.io and the SPA (cookies stay first-party).
+  const distDir = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../../frontend/dist",
+  );
+  if (fs.existsSync(path.join(distDir, "index.html"))) {
+    app.use(express.static(distDir, { index: false, maxAge: "1h" }));
+    app.get("*", (_req, res) => res.sendFile(path.join(distDir, "index.html")));
+  }
 
   return app;
 }
