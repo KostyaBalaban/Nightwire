@@ -16,7 +16,7 @@ function applyFont(size) {
   document.body.classList.add(`font-${size}`);
 }
 
-export const usePrefsStore = create((set, get) => ({
+export const usePrefsStore = create((set) => ({
   theme:           readLocal("nw_theme",        "nightwire"),
   soundOnMessage:  readLocal("nw_snd_msg",      true),
   soundOnSend:     readLocal("nw_snd_send",     true),

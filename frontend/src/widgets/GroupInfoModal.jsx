@@ -36,9 +36,6 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
            ["owner", "admin"].includes(m.role)
   );
 
-  const isOwner = group.members?.some(
-    (m) => String(m.userId?._id ?? m.userId) === String(currentUserId) && m.role === "owner"
-  );
 
   const copyCode = () => {
     navigator.clipboard.writeText(group.inviteCode ?? "");

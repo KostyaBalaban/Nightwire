@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
-import { generateKeyPair, savePrivateKey, loadPrivateKey } from "../lib/crypto.js";
+import { generateKeyPair, savePrivateKey } from "../lib/crypto.js";
 
-export const useSessionStore = create((set, get) => ({
+export const useSessionStore = create((set) => ({
   user: null,
   isChecking: true,
 

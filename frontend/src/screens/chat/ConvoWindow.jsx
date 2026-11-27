@@ -8,12 +8,10 @@ import toast from "react-hot-toast";
 
 import { useChatStore }   from "../../store/chat.store.js";
 import { useSessionStore } from "../../store/session.store.js";
-import { usePrefsStore }   from "../../store/prefs.store.js";
 import { socket }          from "../../lib/socket.js";
 import { useSound }        from "../../hooks/useSound.js";
 import { encryptMessage }  from "../../lib/crypto.js";
 import { loadPrivateKey }  from "../../lib/crypto.js";
-import { axiosInstance }   from "../../lib/axios.js";
 
 import MessageBubble      from "../../widgets/MessageBubble.jsx";
 import AvatarWithStatus   from "../../widgets/AvatarWithStatus.jsx";

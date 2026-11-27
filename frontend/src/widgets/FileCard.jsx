@@ -1,4 +1,4 @@
-import { FileText, Film, Music, Archive, Download, File } from "lucide-react";
+import { FileText, Film, Music, Download, File } from "lucide-react";
 
 function formatBytes(bytes) {
   if (!bytes) return "";

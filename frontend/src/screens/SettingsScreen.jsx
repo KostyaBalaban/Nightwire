@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Moon, Sun, Bell, BellOff, Eye, EyeOff,
-  Monitor, Type, Shield, User, Palette, Minimize2,
+  Monitor, Shield, User, Palette, Minimize2,
   BadgeCheck, KeyRound, AlertTriangle,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -362,16 +362,13 @@ function PrivacyTab() {
   const readReceiptsEnabled   = usePrefsStore((s) => s.readReceiptsEnabled);
   const updatePrivacy         = usePrefsStore((s) => s.updatePrivacy);
   const resetEncryptionKeys   = useSessionStore((s) => s.resetEncryptionKeys);
-  const [saving, setSaving]   = useState(false);
   const [resetting, setResetting] = useState(false);
   const hasKey = !!loadPrivateKey();
 
   const handleChange = async (field, value) => {
-    setSaving(true);
     try {
       await updatePrivacy({ [field]: value });
     } catch { toast.error("Failed to save"); }
-    finally { setSaving(false); }
   };
 
   const handleResetKeys = async () => {
@@ -441,7 +438,7 @@ function PrivacyTab() {
         <div className="px-5 py-3 flex items-start gap-2 bg-warning/5 border-b border-base-300">
           <AlertTriangle size={14} className="text-warning flex-shrink-0 mt-0.5" />
           <p className="text-xs text-base-content/60 leading-relaxed">
-            Your private key is not available on this device (e.g. incognito mode or new browser). Existing messages cannot be decrypted. Use "Reset keys" to generate a new key pair so future messages work — this permanently clears old encrypted messages.
+            Your private key is not available on this device (e.g. incognito mode or new browser). Existing messages cannot be decrypted. Use &quot;Reset keys&quot; to generate a new key pair so future messages work — this permanently clears old encrypted messages.
           </p>
         </div>
       )}
