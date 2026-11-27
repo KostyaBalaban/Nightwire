@@ -8,6 +8,7 @@
   "scripts": {
     "build": "cd backend && npm ci --omit=dev && cd ../frontend && npm ci --include=dev && npm run build",
     "start": "cd backend && npm start",
+    "seed": "cd backend && npm run seed",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

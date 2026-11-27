@@ -80,10 +80,36 @@ The deployment is described in [`render.yaml`](../render.yaml) (a Render Bluepri
    `[DB] Connected` and `[Server] NightWire running`.
 5. Copy the service URL (for example `https://nightwire.onrender.com`), set it as `CLIENT_URL`
    in **Environment**, and save. Render redeploys automatically.
-6. Open the URL and sign up. **The first account created becomes the app admin.** Create your own
-   account first, or run the seed script, which creates the admin first.
+6. Open the URL and sign up. **The first account created becomes the app admin**, so create your
+   own account before sharing the link.
+7. Optionally load the demo data (see below).
 
 Every push to `main` redeploys automatically (`autoDeploy: true`).
+
+## Demo data
+
+`npm run seed` creates a shared demo account for visitors, four demo contacts with 1:1
+conversations (replies, reactions, an edited message, unread messages) and two groups:
+
+| Login | Password |
+| --- | --- |
+| `demo@nightwire.demo` | `nightwire-demo` (override with `DEMO_PASSWORD`) |
+
+```bash
+cd backend
+npm run seed          # uses MONGO_URI from backend/.env
+```
+
+- It only touches accounts on the `@nightwire.demo` domain. Each run deletes them, their
+  messages and the groups they own, then recreates everything, so running it again resets the
+  demo after visitors have played with it.
+- It refuses to run on a database without an admin, so the admin role (first account) still
+  goes to you.
+- Seeded messages are not encrypted: a visitor's browser never has the demo account's private
+  key, so encrypted history would be unreadable. To see E2E encryption, sign up with two
+  accounts in two browsers.
+- To seed production from your machine, put the production `MONGO_URI` in `backend/.env` (or
+  run `MONGO_URI="..." npm run seed`).
 
 ## 4. Keep the demo awake
 
