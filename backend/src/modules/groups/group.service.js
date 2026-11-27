@@ -25,7 +25,7 @@ export async function createGroup({ name, description, avatar, ownerId }) {
   return Group.findById(group._id).populate("members.userId", MEMBER_FIELDS);
 }
 
-const MEMBER_FIELDS = "fullName profilePic bio email emailVerified createdAt isAdmin lastSeen";
+const MEMBER_FIELDS = "fullName profilePic bio emailVerified createdAt isAdmin lastSeen";
 
 export async function getGroupById(groupId) {
   return Group.findById(groupId)

@@ -4,7 +4,7 @@ import { User } from "../auth/user.schema.js";
 import { uploadToVault, uploadFileToVault } from "../../vault/vault.js";
 
 export async function getAllUsers(currentUserId) {
-  return User.find({ _id: { $ne: currentUserId } }).select("-password");
+  return User.find({ _id: { $ne: currentUserId } }).select("-password -email");
 }
 
 export async function getConversation(userId, partnerId) {

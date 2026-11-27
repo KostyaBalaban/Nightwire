@@ -50,7 +50,7 @@ export default function UserProfileModal({ user, isOnline, onClose, onStartChat,
                 )}
               </div>
               <div className="flex items-center gap-1.5">
-                <p className="text-sm text-base-content/50">{user.email}</p>
+                {user.email && <p className="text-sm text-base-content/50">{user.email}</p>}
                 {user.emailVerified && (
                   <BadgeCheck size={14} className="text-success flex-shrink-0" />
                 )}
