@@ -5,37 +5,37 @@ import toast from "react-hot-toast";
 import AvatarWithStatus from "./AvatarWithStatus.jsx";
 import UserProfileModal from "./UserProfileModal.jsx";
 import { useGroupStore } from "../store/group.store.js";
-import { useChatStore }  from "../store/chat.store.js";
+import { useChatStore } from "../store/chat.store.js";
 
 const ROLE_BADGE = {
-  owner: { label: "Owner", icon: Crown,  cls: "text-yellow-500 bg-yellow-500/10" },
+  owner: { label: "Owner", icon: Crown, cls: "text-yellow-500 bg-yellow-500/10" },
   admin: { label: "Admin", icon: Shield, cls: "text-primary bg-primary/10" },
   member: null,
 };
 
 export default function GroupInfoModal({ currentUserId, onClose }) {
   const liveGroup = useGroupStore((s) => s.activeGroup);
-  const [editMode, setEditMode]       = useState(false);
-  const [name, setName]               = useState(liveGroup?.name ?? "");
-  const [desc, setDesc]               = useState(liveGroup?.description ?? "");
+  const [editMode, setEditMode] = useState(false);
+  const [name, setName] = useState(liveGroup?.name ?? "");
+  const [desc, setDesc] = useState(liveGroup?.description ?? "");
   const [avatarPreview, setAvatarPreview] = useState(null);
-  const [saving, setSaving]           = useState(false);
-  const [kicking, setKicking]         = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [kicking, setKicking] = useState(null);
   const [profileUser, setProfileUser] = useState(null);
   const avatarRef = useRef(null);
 
-  const updateGroup  = useGroupStore((s) => s.updateGroup);
-  const kickMember   = useGroupStore((s) => s.kickMember);
-  const onlineUsers  = useChatStore((s) => s.onlineUsers);
+  const updateGroup = useGroupStore((s) => s.updateGroup);
+  const kickMember = useGroupStore((s) => s.kickMember);
+  const onlineUsers = useChatStore((s) => s.onlineUsers);
 
   const group = liveGroup;
   if (!group) return null;
 
   const isOwnerOrAdmin = group.members?.some(
-    (m) => String(m.userId?._id ?? m.userId) === String(currentUserId) &&
-           ["owner", "admin"].includes(m.role)
+    (m) =>
+      String(m.userId?._id ?? m.userId) === String(currentUserId) &&
+      ["owner", "admin"].includes(m.role),
   );
-
 
   const copyCode = () => {
     navigator.clipboard.writeText(group.inviteCode ?? "");
@@ -102,7 +102,10 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
         >
           {/* Banner */}
           <div className="h-20 bg-gradient-to-br from-primary/30 to-primary/10 relative">
-            <button onClick={onClose} className="absolute top-3 right-3 btn btn-ghost btn-circle btn-sm">
+            <button
+              onClick={onClose}
+              className="absolute top-3 right-3 btn btn-ghost btn-circle btn-sm"
+            >
               <X size={16} />
             </button>
             {isOwnerOrAdmin && !editMode && (
@@ -121,10 +124,11 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
             <div className="flex items-end gap-3 -mt-8 mb-4">
               <div className="relative flex-shrink-0">
                 <div className="w-16 h-16 rounded-2xl bg-primary/20 border-4 border-base-200 flex items-center justify-center overflow-hidden">
-                  {displayAvatar
-                    ? <img src={displayAvatar} className="w-full h-full object-cover" />
-                    : <Users size={28} className="text-primary" />
-                  }
+                  {displayAvatar ? (
+                    <img src={displayAvatar} className="w-full h-full object-cover" />
+                  ) : (
+                    <Users size={28} className="text-primary" />
+                  )}
                 </div>
                 {editMode && (
                   <>
@@ -134,7 +138,13 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
                     >
                       <Camera size={18} className="text-white" />
                     </button>
-                    <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                    <input
+                      ref={avatarRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarChange}
+                    />
                   </>
                 )}
               </div>
@@ -150,7 +160,9 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
                 ) : (
                   <>
                     <h2 className="text-lg font-bold text-base-content truncate">{group.name}</h2>
-                    <p className="text-xs text-base-content/40">{group.members?.length ?? 0} members</p>
+                    <p className="text-xs text-base-content/40">
+                      {group.members?.length ?? 0} members
+                    </p>
                   </>
                 )}
               </div>
@@ -159,7 +171,9 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
             {/* Description */}
             {editMode ? (
               <div className="mb-4">
-                <p className="text-xs text-base-content/40 mb-1 font-medium uppercase tracking-wider">Description</p>
+                <p className="text-xs text-base-content/40 mb-1 font-medium uppercase tracking-wider">
+                  Description
+                </p>
                 <textarea
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)}
@@ -171,8 +185,12 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
             ) : (
               group.description && (
                 <div className="bg-base-300 rounded-xl px-4 py-3 mb-4">
-                  <p className="text-xs text-base-content/40 mb-1 font-medium uppercase tracking-wider">About</p>
-                  <p className="text-sm text-base-content/80 leading-relaxed">{group.description}</p>
+                  <p className="text-xs text-base-content/40 mb-1 font-medium uppercase tracking-wider">
+                    About
+                  </p>
+                  <p className="text-sm text-base-content/80 leading-relaxed">
+                    {group.description}
+                  </p>
                 </div>
               )
             )}
@@ -180,9 +198,21 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
             {/* Save / Cancel buttons */}
             {editMode && (
               <div className="flex gap-2 mb-4">
-                <button onClick={handleCancelEdit} className="btn btn-ghost btn-sm flex-1">Cancel</button>
-                <button onClick={handleSave} disabled={saving} className="btn btn-primary btn-sm flex-1">
-                  {saving ? <span className="loading loading-spinner loading-xs" /> : <><Check size={13} /> Save</>}
+                <button onClick={handleCancelEdit} className="btn btn-ghost btn-sm flex-1">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="btn btn-primary btn-sm flex-1"
+                >
+                  {saving ? (
+                    <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                    <>
+                      <Check size={13} /> Save
+                    </>
+                  )}
                 </button>
               </div>
             )}
@@ -191,8 +221,12 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
             {isOwnerOrAdmin && group.inviteCode && (
               <div className="bg-base-300 rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs text-base-content/40 mb-0.5 font-medium uppercase tracking-wider">Invite code</p>
-                  <p className="font-mono font-bold text-primary tracking-widest">{group.inviteCode}</p>
+                  <p className="text-xs text-base-content/40 mb-0.5 font-medium uppercase tracking-wider">
+                    Invite code
+                  </p>
+                  <p className="font-mono font-bold text-primary tracking-widest">
+                    {group.inviteCode}
+                  </p>
                 </div>
                 <button onClick={copyCode} className="btn btn-ghost btn-circle btn-sm" title="Copy">
                   <Copy size={14} />
@@ -201,13 +235,15 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
             )}
 
             {/* Members */}
-            <p className="text-xs text-base-content/40 font-medium uppercase tracking-wider mb-2">Members</p>
+            <p className="text-xs text-base-content/40 font-medium uppercase tracking-wider mb-2">
+              Members
+            </p>
             <div className="space-y-1 max-h-52 overflow-y-auto">
               {(group.members ?? []).map((m) => {
                 const u = m.userId;
                 if (!u || typeof u !== "object") return null;
                 const badge = ROLE_BADGE[m.role];
-                const isSelf  = String(u._id) === String(currentUserId);
+                const isSelf = String(u._id) === String(currentUserId);
                 const isGroupOwner = m.role === "owner";
                 const canKick = isOwnerOrAdmin && !isSelf && !isGroupOwner;
 
@@ -225,21 +261,27 @@ export default function GroupInfoModal({ currentUserId, onClose }) {
                     />
                     <p className="text-sm text-base-content flex-1 truncate">{u.fullName}</p>
                     {badge && (
-                      <span className={`flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${badge.cls}`}>
+                      <span
+                        className={`flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${badge.cls}`}
+                      >
                         <badge.icon size={9} /> {badge.label}
                       </span>
                     )}
                     {canKick && (
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleKick(String(u._id)); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleKick(String(u._id));
+                        }}
                         disabled={kicking === String(u._id)}
                         className="btn btn-ghost btn-xs btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Remove member"
                       >
-                        {kicking === String(u._id)
-                          ? <span className="loading loading-spinner loading-xs" />
-                          : <UserMinus size={13} />
-                        }
+                        {kicking === String(u._id) ? (
+                          <span className="loading loading-spinner loading-xs" />
+                        ) : (
+                          <UserMinus size={13} />
+                        )}
                       </button>
                     )}
                   </div>

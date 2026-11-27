@@ -121,7 +121,18 @@ export async function getGroupMessages(groupId, userId) {
     .sort({ createdAt: 1 });
 }
 
-export async function sendGroupMessage({ groupId, senderId, text, image, fileUrl, fileType, fileName, fileSize, replyTo, replyToSnippet }) {
+export async function sendGroupMessage({
+  groupId,
+  senderId,
+  text,
+  image,
+  fileUrl,
+  fileType,
+  fileName,
+  fileSize,
+  replyTo,
+  replyToSnippet,
+}) {
   const group = await Group.findById(groupId);
   if (!group) throw { status: 404, message: "Group not found" };
 

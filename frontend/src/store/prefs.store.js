@@ -17,15 +17,15 @@ function applyFont(size) {
 }
 
 export const usePrefsStore = create((set) => ({
-  theme:           readLocal("nw_theme",        "nightwire"),
-  soundOnMessage:  readLocal("nw_snd_msg",      true),
-  soundOnSend:     readLocal("nw_snd_send",     true),
-  fontSize:        readLocal("nw_font",         "md"),
-  pushEnabled:     readLocal("nw_push",         false),
-  minimalistMode:  readLocal("nw_minimalist",   false),
+  theme: readLocal("nw_theme", "nightwire"),
+  soundOnMessage: readLocal("nw_snd_msg", true),
+  soundOnSend: readLocal("nw_snd_send", true),
+  fontSize: readLocal("nw_font", "md"),
+  pushEnabled: readLocal("nw_push", false),
+  minimalistMode: readLocal("nw_minimalist", false),
 
   // privacy (server-side, seeded after login)
-  lastSeenVisibility:  "all",
+  lastSeenVisibility: "all",
   readReceiptsEnabled: true,
 
   // ─── appearance ──────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ export const usePrefsStore = create((set) => ({
   setMinimalistMode: (val) => {
     localStorage.setItem("nw_minimalist", JSON.stringify(val));
     if (val) document.body.classList.add("minimalist");
-    else     document.body.classList.remove("minimalist");
+    else document.body.classList.remove("minimalist");
     set({ minimalistMode: val });
   },
 
@@ -88,11 +88,11 @@ export const usePrefsStore = create((set) => ({
     const s = userSettings;
     applyFont(s.fontSize ?? readLocal("nw_font", "md"));
     set({
-      lastSeenVisibility:  s.lastSeenVisibility  ?? "all",
+      lastSeenVisibility: s.lastSeenVisibility ?? "all",
       readReceiptsEnabled: s.readReceiptsEnabled ?? true,
-      soundOnMessage:      s.soundOnMessage      ?? readLocal("nw_snd_msg",  true),
-      soundOnSend:         s.soundOnSend         ?? readLocal("nw_snd_send", true),
-      fontSize:            s.fontSize            ?? readLocal("nw_font", "md"),
+      soundOnMessage: s.soundOnMessage ?? readLocal("nw_snd_msg", true),
+      soundOnSend: s.soundOnSend ?? readLocal("nw_snd_send", true),
+      fontSize: s.fontSize ?? readLocal("nw_font", "md"),
     });
   },
 }));

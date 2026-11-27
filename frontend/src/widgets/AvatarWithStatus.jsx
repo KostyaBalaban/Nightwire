@@ -1,5 +1,5 @@
 const sizeMap = {
-  sm: { avatar: "w-8 h-8 text-xs",  dot: "w-2 h-2" },
+  sm: { avatar: "w-8 h-8 text-xs", dot: "w-2 h-2" },
   md: { avatar: "w-10 h-10 text-sm", dot: "w-2.5 h-2.5" },
   lg: { avatar: "w-14 h-14 text-lg", dot: "w-3 h-3" },
 };
@@ -7,12 +7,13 @@ const sizeMap = {
 export default function AvatarWithStatus({ src, name, size = "md", online = false }) {
   const { avatar, dot } = sizeMap[size] || sizeMap.md;
 
-  const initials = name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase() ?? "?";
+  const initials =
+    name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ?? "?";
 
   return (
     <div className="relative inline-flex flex-shrink-0">

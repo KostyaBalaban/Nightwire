@@ -16,8 +16,7 @@ export async function signup(req, res) {
   try {
     const { fullName, email, password, publicKey } = req.body;
 
-    if (!fullName || !email || !password)
-      return fail(res, "All fields are required", 400);
+    if (!fullName || !email || !password) return fail(res, "All fields are required", 400);
 
     const user = await createAccount({ fullName, email, password, publicKey });
     issueSession(res, user._id);
@@ -60,8 +59,7 @@ export async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password)
-      return fail(res, "Email and password are required", 400);
+    if (!email || !password) return fail(res, "Email and password are required", 400);
 
     const user = await verifyCredentials({ email, password });
     issueSession(res, user._id);
@@ -87,8 +85,7 @@ export async function updateProfile(req, res) {
     const updates = {};
 
     if (typeof bio !== "undefined") {
-      if (bio.length > 150)
-        return fail(res, "Bio must be under 150 characters", 400);
+      if (bio.length > 150) return fail(res, "Bio must be under 150 characters", 400);
       updates.bio = bio;
     }
 
@@ -111,8 +108,7 @@ export async function updateProfile(req, res) {
       updates.publicKey = req.body.publicKey;
     }
 
-    if (Object.keys(updates).length === 0)
-      return fail(res, "No update fields provided", 400);
+    if (Object.keys(updates).length === 0) return fail(res, "No update fields provided", 400);
 
     const updated = await User.findByIdAndUpdate(req.user._id, updates, {
       new: true,

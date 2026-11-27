@@ -2,20 +2,23 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 
 export const useGroupStore = create((set, get) => ({
-  groups:       [],
-  activeGroup:  null,
-  messages:     [],
-  isLoading:    false,
+  groups: [],
+  activeGroup: null,
+  messages: [],
+  isLoading: false,
   isLoadingMsgs: false,
-  typingUsers:  new Set(),
+  typingUsers: new Set(),
 
   fetchGroups: async () => {
     set({ isLoading: true });
     try {
       const { data } = await axiosInstance.get("/groups");
       set({ groups: data.groups });
-    } catch { /* silent */ }
-    finally { set({ isLoading: false }); }
+    } catch {
+      /* silent */
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   createGroup: async (payload) => {
@@ -63,7 +66,8 @@ export const useGroupStore = create((set, get) => ({
     await axiosInstance.post(`/groups/${groupId}/leave`);
     set((s) => ({
       groups: s.groups.filter((g) => String(g._id) !== String(groupId)),
-      activeGroup: s.activeGroup && String(s.activeGroup._id) === String(groupId) ? null : s.activeGroup,
+      activeGroup:
+        s.activeGroup && String(s.activeGroup._id) === String(groupId) ? null : s.activeGroup,
       messages: s.activeGroup && String(s.activeGroup._id) === String(groupId) ? [] : s.messages,
     }));
   },
@@ -71,8 +75,9 @@ export const useGroupStore = create((set, get) => ({
   updateGroup: async (groupId, updates) => {
     const { data } = await axiosInstance.put(`/groups/${groupId}`, updates);
     set((s) => ({
-      groups: s.groups.map((g) => String(g._id) === String(groupId) ? data.group : g),
-      activeGroup: s.activeGroup && String(s.activeGroup._id) === String(groupId) ? data.group : s.activeGroup,
+      groups: s.groups.map((g) => (String(g._id) === String(groupId) ? data.group : g)),
+      activeGroup:
+        s.activeGroup && String(s.activeGroup._id) === String(groupId) ? data.group : s.activeGroup,
     }));
     return data.group;
   },
@@ -80,8 +85,9 @@ export const useGroupStore = create((set, get) => ({
   kickMember: async (groupId, userId) => {
     const { data } = await axiosInstance.delete(`/groups/${groupId}/members/${userId}`);
     set((s) => ({
-      groups: s.groups.map((g) => String(g._id) === String(groupId) ? data.group : g),
-      activeGroup: s.activeGroup && String(s.activeGroup._id) === String(groupId) ? data.group : s.activeGroup,
+      groups: s.groups.map((g) => (String(g._id) === String(groupId) ? data.group : g)),
+      activeGroup:
+        s.activeGroup && String(s.activeGroup._id) === String(groupId) ? data.group : s.activeGroup,
     }));
     return data.group;
   },
@@ -90,9 +96,7 @@ export const useGroupStore = create((set, get) => ({
     const { data } = await axiosInstance.post(`/messages/${messageId}/react`, { emoji });
     set((s) => ({
       messages: s.messages.map((m) =>
-        String(m._id) === String(messageId)
-          ? { ...m, reactions: data.message.reactions }
-          : m
+        String(m._id) === String(messageId) ? { ...m, reactions: data.message.reactions } : m,
       ),
     }));
   },
@@ -100,7 +104,7 @@ export const useGroupStore = create((set, get) => ({
   applyReaction: ({ messageId, reactions }) => {
     set((s) => ({
       messages: s.messages.map((m) =>
-        String(m._id) === String(messageId) ? { ...m, reactions } : m
+        String(m._id) === String(messageId) ? { ...m, reactions } : m,
       ),
     }));
   },
@@ -108,26 +112,29 @@ export const useGroupStore = create((set, get) => ({
   removeGroup: (groupId) => {
     set((s) => ({
       groups: s.groups.filter((g) => String(g._id) !== String(groupId)),
-      activeGroup: s.activeGroup && String(s.activeGroup._id) === String(groupId) ? null : s.activeGroup,
+      activeGroup:
+        s.activeGroup && String(s.activeGroup._id) === String(groupId) ? null : s.activeGroup,
       messages: s.activeGroup && String(s.activeGroup._id) === String(groupId) ? [] : s.messages,
     }));
   },
 
   applyGroupUpdate: (updatedGroup) => {
     set((s) => ({
-      groups: s.groups.map((g) => String(g._id) === String(updatedGroup._id) ? updatedGroup : g),
-      activeGroup: s.activeGroup && String(s.activeGroup._id) === String(updatedGroup._id)
-        ? updatedGroup
-        : s.activeGroup,
+      groups: s.groups.map((g) => (String(g._id) === String(updatedGroup._id) ? updatedGroup : g)),
+      activeGroup:
+        s.activeGroup && String(s.activeGroup._id) === String(updatedGroup._id)
+          ? updatedGroup
+          : s.activeGroup,
     }));
   },
 
   applyMemberJoined: (updatedGroup) => {
     set((s) => ({
-      groups: s.groups.map((g) => String(g._id) === String(updatedGroup._id) ? updatedGroup : g),
-      activeGroup: s.activeGroup && String(s.activeGroup._id) === String(updatedGroup._id)
-        ? updatedGroup
-        : s.activeGroup,
+      groups: s.groups.map((g) => (String(g._id) === String(updatedGroup._id) ? updatedGroup : g)),
+      activeGroup:
+        s.activeGroup && String(s.activeGroup._id) === String(updatedGroup._id)
+          ? updatedGroup
+          : s.activeGroup,
     }));
   },
 

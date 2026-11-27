@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
-import { decryptMessage, encryptMessage, loadPrivateKey, cacheSentPlaintext, loadSentPlaintext } from "../lib/crypto.js";
+import {
+  decryptMessage,
+  encryptMessage,
+  loadPrivateKey,
+  cacheSentPlaintext,
+  loadSentPlaintext,
+} from "../lib/crypto.js";
 import { useSessionStore } from "./session.store.js";
 
 const ENCRYPTED_PLACEHOLDER = "🔒 Encrypted message";
@@ -35,7 +41,10 @@ export async function decryptForDisplay(m, privKey = loadPrivateKey(), myId = cu
     result = { ...result, text: await plaintextFor(m, privKey, myId) };
   }
   if (m.replyTo?.isEncrypted && m.replyTo?.text) {
-    result = { ...result, replyTo: { ...m.replyTo, text: await plaintextFor(m.replyTo, privKey, myId) } };
+    result = {
+      ...result,
+      replyTo: { ...m.replyTo, text: await plaintextFor(m.replyTo, privKey, myId) },
+    };
   }
   return result;
 }
@@ -98,20 +107,22 @@ export const useChatStore = create((set, get) => ({
       const currentUserId = String(useSessionStore.getState().user?._id ?? "");
       const map = {};
 
-      await Promise.all(data.previews.map(async (p) => {
-        let lastMessage = p.lastMessage;
-        if (lastMessage?.isEncrypted && lastMessage?.text) {
-          const senderId = String(lastMessage.senderId ?? "");
-          const isMine = senderId === currentUserId;
-          if (isMine) {
-            const cached = loadSentPlaintext(lastMessage._id);
-            lastMessage = { ...lastMessage, text: cached ?? ENCRYPTED_PLACEHOLDER };
-          } else {
-            lastMessage = { ...lastMessage, text: await tryDecrypt(lastMessage.text, privKey) };
+      await Promise.all(
+        data.previews.map(async (p) => {
+          let lastMessage = p.lastMessage;
+          if (lastMessage?.isEncrypted && lastMessage?.text) {
+            const senderId = String(lastMessage.senderId ?? "");
+            const isMine = senderId === currentUserId;
+            if (isMine) {
+              const cached = loadSentPlaintext(lastMessage._id);
+              lastMessage = { ...lastMessage, text: cached ?? ENCRYPTED_PLACEHOLDER };
+            } else {
+              lastMessage = { ...lastMessage, text: await tryDecrypt(lastMessage.text, privKey) };
+            }
           }
-        }
-        map[String(p._id)] = { lastMessage, unread: p.unread ?? 0 };
-      }));
+          map[String(p._id)] = { lastMessage, unread: p.unread ?? 0 };
+        }),
+      );
 
       const counts = {};
       data.previews.forEach((p) => {
@@ -126,7 +137,13 @@ export const useChatStore = create((set, get) => ({
   // ─── active conversation ──────────────────────────────────────────────────
 
   setActiveUser: async (user) => {
-    set({ activeUser: user, messages: [], isLoadingMessages: true, replyTo: null, editingMessage: null });
+    set({
+      activeUser: user,
+      messages: [],
+      isLoadingMessages: true,
+      replyTo: null,
+      editingMessage: null,
+    });
     try {
       const { data } = await axiosInstance.get(`/messages/${user._id}`);
       const messages = await decryptMessages(data.messages);
@@ -186,7 +203,7 @@ export const useChatStore = create((set, get) => ({
       messages: s.messages.map((m) =>
         String(m._id) === String(messageId)
           ? { ...m, text, isEdited: data.message.isEdited, editedAt: data.message.editedAt }
-          : m
+          : m,
       ),
       editingMessage: null,
     }));
@@ -194,12 +211,10 @@ export const useChatStore = create((set, get) => ({
 
   deleteMessage: async (messageId, forEveryone) => {
     const { data } = await axiosInstance.delete(
-      `/messages/${messageId}?forEveryone=${forEveryone}`
+      `/messages/${messageId}?forEveryone=${forEveryone}`,
     );
     set((s) => ({
-      messages: s.messages.map((m) =>
-        String(m._id) === String(messageId) ? data.message : m
-      ),
+      messages: s.messages.map((m) => (String(m._id) === String(messageId) ? data.message : m)),
     }));
   },
 
@@ -218,8 +233,7 @@ export const useChatStore = create((set, get) => ({
   receiveMessage: (msg) => {
     const { activeUser, messages, unreadCounts } = get();
     const fromId = String(msg.senderId);
-    const isActiveConvo =
-      activeUser && String(activeUser._id) === fromId;
+    const isActiveConvo = activeUser && String(activeUser._id) === fromId;
 
     if (isActiveConvo) {
       set({ messages: [...messages, msg] });
@@ -242,8 +256,13 @@ export const useChatStore = create((set, get) => ({
     set((s) => ({
       messages: s.messages.map((m) =>
         String(m._id) === String(updatedMsg._id)
-          ? { ...m, text: updatedMsg.text, isEdited: updatedMsg.isEdited, editedAt: updatedMsg.editedAt }
-          : m
+          ? {
+              ...m,
+              text: updatedMsg.text,
+              isEdited: updatedMsg.isEdited,
+              editedAt: updatedMsg.editedAt,
+            }
+          : m,
       ),
     }));
   },
@@ -254,7 +273,7 @@ export const useChatStore = create((set, get) => ({
       messages: s.messages.map((m) =>
         String(m._id) === String(messageId)
           ? { ...m, isDeletedForEveryone: true, text: "", image: "" }
-          : m
+          : m,
       ),
     }));
   },
@@ -264,7 +283,7 @@ export const useChatStore = create((set, get) => ({
       messages: s.messages.map((m) =>
         String(m.receiverId) === String(senderId) && m.status !== "read"
           ? { ...m, status: "read" }
-          : m
+          : m,
       ),
     }));
   },
@@ -272,7 +291,7 @@ export const useChatStore = create((set, get) => ({
   applyReaction: ({ messageId, reactions }) => {
     set((s) => ({
       messages: s.messages.map((m) =>
-        String(m._id) === String(messageId) ? { ...m, reactions } : m
+        String(m._id) === String(messageId) ? { ...m, reactions } : m,
       ),
     }));
   },
@@ -282,9 +301,7 @@ export const useChatStore = create((set, get) => ({
     // only update reactions — replacing the whole message would overwrite decrypted text
     set((s) => ({
       messages: s.messages.map((m) =>
-        String(m._id) === String(messageId)
-          ? { ...m, reactions: data.message.reactions }
-          : m
+        String(m._id) === String(messageId) ? { ...m, reactions: data.message.reactions } : m,
       ),
     }));
   },
@@ -313,19 +330,17 @@ export const useChatStore = create((set, get) => ({
 
   // ─── reply / edit state ──────────────────────────────────────────────────
 
-  setReplyTo:          (msg) => set({ replyTo: msg }),
-  clearReplyTo:        ()    => set({ replyTo: null }),
-  setEditingMessage:   (msg) => set({ editingMessage: msg, replyTo: null }),
-  clearEditingMessage: ()    => set({ editingMessage: null }),
+  setReplyTo: (msg) => set({ replyTo: msg }),
+  clearReplyTo: () => set({ replyTo: null }),
+  setEditingMessage: (msg) => set({ editingMessage: msg, replyTo: null }),
+  clearEditingMessage: () => set({ editingMessage: null }),
 
   // ─── search ──────────────────────────────────────────────────────────────
 
   searchMessages: async (query) => {
     set({ isSearching: true });
     try {
-      const { data } = await axiosInstance.get(
-        `/messages/search?q=${encodeURIComponent(query)}`
-      );
+      const { data } = await axiosInstance.get(`/messages/search?q=${encodeURIComponent(query)}`);
       set({ searchResults: data.messages });
     } catch {
       set({ searchResults: [] });

@@ -18,29 +18,43 @@ export async function getConversation(userId, partnerId) {
     .sort({ createdAt: 1 });
 }
 
-export async function createMessage({ senderId, receiverId, text, image, fileData, fileType, fileName, fileSize, replyTo, replyToSnippet, isEncrypted }) {
+export async function createMessage({
+  senderId,
+  receiverId,
+  text,
+  image,
+  fileData,
+  fileType,
+  fileName,
+  fileSize,
+  replyTo,
+  replyToSnippet,
+  isEncrypted,
+}) {
   let imageUrl = "";
-  let fileUrl  = "";
+  let fileUrl = "";
 
   if (image) {
     const uploaded = await uploadToVault(image, { folder: "nightwire/messages" });
     imageUrl = uploaded.secure_url;
   } else if (fileData) {
-    const uploaded = await uploadFileToVault(fileData, fileType || "document", { folder: "nightwire/files" });
+    const uploaded = await uploadFileToVault(fileData, fileType || "document", {
+      folder: "nightwire/files",
+    });
     fileUrl = uploaded.secure_url;
   }
 
   const msg = await Message.create({
     senderId,
     receiverId,
-    text:        text || "",
-    image:       imageUrl,
+    text: text || "",
+    image: imageUrl,
     fileUrl,
-    fileType:    fileType   || "image",
-    fileName:    fileName   || "",
-    fileSize:    fileSize   || 0,
-    isEncrypted:    isEncrypted    || false,
-    replyTo:        replyTo        || null,
+    fileType: fileType || "image",
+    fileName: fileName || "",
+    fileSize: fileSize || 0,
+    isEncrypted: isEncrypted || false,
+    replyTo: replyTo || null,
     replyToSnippet: replyToSnippet || "",
   });
 
@@ -50,10 +64,8 @@ export async function createMessage({ senderId, receiverId, text, image, fileDat
 export async function editMessage(messageId, userId, newText) {
   const msg = await Message.findById(messageId);
   if (!msg) throw { status: 404, message: "Message not found" };
-  if (String(msg.senderId) !== String(userId))
-    throw { status: 403, message: "Not your message" };
-  if (msg.isDeletedForEveryone)
-    throw { status: 400, message: "Cannot edit deleted message" };
+  if (String(msg.senderId) !== String(userId)) throw { status: 403, message: "Not your message" };
+  if (msg.isDeletedForEveryone) throw { status: 400, message: "Cannot edit deleted message" };
 
   msg.text = newText;
   msg.isEdited = true;
@@ -144,10 +156,7 @@ export async function getConversationPreviews(userId) {
           $sum: {
             $cond: [
               {
-                $and: [
-                  { $eq: ["$receiverId", uid] },
-                  { $ne: ["$status", "read"] },
-                ],
+                $and: [{ $eq: ["$receiverId", uid] }, { $ne: ["$status", "read"] }],
               },
               1,
               0,

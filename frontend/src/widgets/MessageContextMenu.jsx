@@ -5,9 +5,17 @@ import { CornerUpLeft, Edit2, Trash, Trash2, Flag } from "lucide-react";
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 
 export default function MessageContextMenu({
-  x, y, isMine, isDeleted,
-  onReply, onEdit, onDeleteForMe, onDeleteForAll, onClose,
-  onReact, onReport,
+  x,
+  y,
+  isMine,
+  isDeleted,
+  onReply,
+  onEdit,
+  onDeleteForMe,
+  onDeleteForAll,
+  onClose,
+  onReact,
+  onReport,
 }) {
   const ref = useRef(null);
 
@@ -23,7 +31,7 @@ export default function MessageContextMenu({
     };
   }, [onClose]);
 
-  const safeX = Math.min(x, window.innerWidth  - 200);
+  const safeX = Math.min(x, window.innerWidth - 200);
   const safeY = Math.min(y, window.innerHeight - 250);
 
   const Item = ({ icon: Icon, label, onClick, danger }) => (
@@ -54,7 +62,10 @@ export default function MessageContextMenu({
           {QUICK_EMOJIS.map((e) => (
             <button
               key={e}
-              onClick={() => { onReact?.(e); onClose(); }}
+              onClick={() => {
+                onReact?.(e);
+                onClose();
+              }}
               className="w-8 h-8 flex items-center justify-center text-base hover:bg-base-300 rounded-lg transition-colors"
             >
               {e}
@@ -62,20 +73,25 @@ export default function MessageContextMenu({
           ))}
         </div>
 
-        <Item icon={CornerUpLeft} label="Reply"         onClick={onReply} />
-        {isMine && !isDeleted && (
-          <Item icon={Edit2}      label="Edit"           onClick={onEdit} />
-        )}
+        <Item icon={CornerUpLeft} label="Reply" onClick={onReply} />
+        {isMine && !isDeleted && <Item icon={Edit2} label="Edit" onClick={onEdit} />}
         <div className="border-t border-base-300" />
         {!isMine && (
-          <Item icon={Flag}         label="Report"         onClick={() => { onReport?.(); onClose(); }} danger />
+          <Item
+            icon={Flag}
+            label="Report"
+            onClick={() => {
+              onReport?.();
+              onClose();
+            }}
+            danger
+          />
         )}
-        <Item icon={Trash}          label="Delete for me"  onClick={onDeleteForMe} danger />
+        <Item icon={Trash} label="Delete for me" onClick={onDeleteForMe} danger />
         {isMine && !isDeleted && (
-          <Item icon={Trash2}       label="Delete for all" onClick={onDeleteForAll} danger />
+          <Item icon={Trash2} label="Delete for all" onClick={onDeleteForAll} danger />
         )}
       </motion.div>
-
     </>
   );
 }

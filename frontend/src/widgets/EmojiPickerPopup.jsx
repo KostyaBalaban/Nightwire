@@ -3,9 +3,9 @@ import EmojiPicker from "emoji-picker-react";
 import { usePrefsStore } from "../store/prefs.store.js";
 
 export default function EmojiPickerPopup({ onSelect, onClose }) {
-  const theme  = usePrefsStore((s) => s.theme);
+  const theme = usePrefsStore((s) => s.theme);
   const isDark = theme === "nightwire";
-  const ref    = useRef(null);
+  const ref = useRef(null);
 
   useEffect(() => {
     const close = (e) => {

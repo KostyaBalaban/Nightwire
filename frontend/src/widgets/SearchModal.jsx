@@ -17,7 +17,7 @@ function Highlight({ text, query }) {
           </mark>
         ) : (
           p
-        )
+        ),
       )}
     </>
   );
@@ -27,11 +27,11 @@ export default function SearchModal({ onClose, onNavigate }) {
   const [query, setQuery] = useState("");
   const timerRef = useRef(null);
 
-  const searchMessages  = useChatStore((s) => s.searchMessages);
-  const searchResults   = useChatStore((s) => s.searchResults);
-  const isSearching     = useChatStore((s) => s.isSearching);
-  const clearSearch     = useChatStore((s) => s.clearSearchResults);
-  const currentUser     = useSessionStore((s) => s.user);
+  const searchMessages = useChatStore((s) => s.searchMessages);
+  const searchResults = useChatStore((s) => s.searchResults);
+  const isSearching = useChatStore((s) => s.isSearching);
+  const clearSearch = useChatStore((s) => s.clearSearchResults);
+  const currentUser = useSessionStore((s) => s.user);
 
   const handleInput = (e) => {
     const q = e.target.value;
@@ -71,10 +71,7 @@ export default function SearchModal({ onClose, onNavigate }) {
             placeholder="Search messages…"
             className="flex-1 bg-transparent text-base-content placeholder:text-base-content/40 outline-none text-sm"
           />
-          <button
-            onClick={handleClose}
-            className="btn btn-ghost btn-xs btn-circle flex-shrink-0"
-          >
+          <button onClick={handleClose} className="btn btn-ghost btn-xs btn-circle flex-shrink-0">
             <X size={15} />
           </button>
         </div>
@@ -88,21 +85,22 @@ export default function SearchModal({ onClose, onNavigate }) {
           )}
 
           {!isSearching && query.length > 1 && searchResults.length === 0 && (
-            <p className="text-center text-base-content/40 text-sm py-10">
-              No messages found
-            </p>
+            <p className="text-center text-base-content/40 text-sm py-10">No messages found</p>
           )}
 
           {!isSearching &&
             searchResults.map((msg) => {
-              const isMine  = String(msg.senderId?._id) === String(currentUser?._id);
+              const isMine = String(msg.senderId?._id) === String(currentUser?._id);
               const partner = isMine ? msg.receiverId : msg.senderId;
 
               return (
                 <button
                   key={msg._id}
                   className="w-full flex items-start gap-3 px-4 py-3 hover:bg-base-300 transition-colors text-left border-b border-base-300/50 last:border-0"
-                  onClick={() => { onNavigate(msg); handleClose(); }}
+                  onClick={() => {
+                    onNavigate(msg);
+                    handleClose();
+                  }}
                 >
                   {partner?.profilePic ? (
                     <img
@@ -116,9 +114,7 @@ export default function SearchModal({ onClose, onNavigate }) {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-base-content/50 mb-0.5">
-                      {partner?.fullName}
-                    </p>
+                    <p className="text-xs text-base-content/50 mb-0.5">{partner?.fullName}</p>
                     <p className="text-sm text-base-content truncate">
                       <Highlight text={msg.text} query={query} />
                     </p>

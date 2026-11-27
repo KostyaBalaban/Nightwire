@@ -4,7 +4,7 @@ import { useSessionStore } from "../store/session.store.js";
 import AvatarWithStatus from "../widgets/AvatarWithStatus.jsx";
 
 export default function ProfileScreen() {
-  const user     = useSessionStore((s) => s.user);
+  const user = useSessionStore((s) => s.user);
   const navigate = useNavigate();
 
   return (
@@ -28,9 +28,7 @@ export default function ProfileScreen() {
           <AvatarWithStatus src={user?.profilePic} name={user?.fullName} size="lg" online />
           <div className="text-center">
             <p className="text-lg font-bold text-base-content">{user?.fullName}</p>
-            {user?.bio && (
-              <p className="text-sm text-base-content/60 mt-1 max-w-xs">{user.bio}</p>
-            )}
+            {user?.bio && <p className="text-sm text-base-content/60 mt-1 max-w-xs">{user.bio}</p>}
           </div>
         </div>
 
@@ -44,17 +42,16 @@ export default function ProfileScreen() {
             <p className="text-base-content">
               {user?.createdAt
                 ? new Date(user.createdAt).toLocaleDateString("en-US", {
-                    year: "numeric", month: "long", day: "numeric",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
                   })
                 : "—"}
             </p>
           </div>
         </div>
 
-        <button
-          onClick={() => navigate("/settings")}
-          className="btn btn-primary w-full"
-        >
+        <button onClick={() => navigate("/settings")} className="btn btn-primary w-full">
           Edit profile & settings
         </button>
       </div>

@@ -1,18 +1,26 @@
 import { useState, useRef, useEffect } from "react";
 import {
-  ArrowLeft, Send, Plus, Users, LogOut,
-  UserPlus, Smile, Paperclip, X, CornerUpLeft,
+  ArrowLeft,
+  Send,
+  Plus,
+  Users,
+  LogOut,
+  UserPlus,
+  Smile,
+  Paperclip,
+  X,
+  CornerUpLeft,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { useGroupStore }   from "../../store/group.store.js";
+import { useGroupStore } from "../../store/group.store.js";
 import { useSessionStore } from "../../store/session.store.js";
-import { socket }          from "../../lib/socket.js";
-import EmojiPickerPopup    from "../../widgets/EmojiPickerPopup.jsx";
-import FileCard            from "../../widgets/FileCard.jsx";
-import ReactionBar         from "../../widgets/ReactionBar.jsx";
-import GroupInfoModal      from "../../widgets/GroupInfoModal.jsx";
+import { socket } from "../../lib/socket.js";
+import EmojiPickerPopup from "../../widgets/EmojiPickerPopup.jsx";
+import FileCard from "../../widgets/FileCard.jsx";
+import ReactionBar from "../../widgets/ReactionBar.jsx";
+import GroupInfoModal from "../../widgets/GroupInfoModal.jsx";
 
 const FILE_MAX = 50 * 1024 * 1024;
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
@@ -20,8 +28,8 @@ const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
 // ── Modals ────────────────────────────────────────────────────────────────────
 
 function CreateGroupModal({ onClose }) {
-  const [name, setName]       = useState("");
-  const [desc, setDesc]       = useState("");
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
   const [loading, setLoading] = useState(false);
   const createGroup = useGroupStore((s) => s.createGroup);
 
@@ -35,7 +43,9 @@ function CreateGroupModal({ onClose }) {
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to create group");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,19 +61,23 @@ function CreateGroupModal({ onClose }) {
           <h2 className="font-bold text-base-content mb-4">Create Group</h2>
           <form onSubmit={submit} className="space-y-3">
             <input
-              value={name} onChange={(e) => setName(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Group name"
               className="input input-bordered w-full bg-base-300 border-base-300 focus:border-primary focus:outline-none text-sm"
               required
             />
             <textarea
-              value={desc} onChange={(e) => setDesc(e.target.value)}
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
               placeholder="Description (optional)"
               rows={2}
               className="textarea textarea-bordered w-full bg-base-300 border-base-300 text-sm resize-none focus:border-primary focus:outline-none"
             />
             <div className="flex gap-2 pt-1">
-              <button type="button" onClick={onClose} className="btn btn-ghost flex-1">Cancel</button>
+              <button type="button" onClick={onClose} className="btn btn-ghost flex-1">
+                Cancel
+              </button>
               <button type="submit" disabled={loading} className="btn btn-primary flex-1">
                 {loading ? <span className="loading loading-spinner loading-xs" /> : "Create"}
               </button>
@@ -76,7 +90,7 @@ function CreateGroupModal({ onClose }) {
 }
 
 function JoinGroupModal({ onClose }) {
-  const [code, setCode]       = useState("");
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const joinGroup = useGroupStore((s) => s.joinGroup);
 
@@ -90,7 +104,9 @@ function JoinGroupModal({ onClose }) {
       onClose();
     } catch (err) {
       toast.error(err.response?.data?.message || "Invalid invite code");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -106,13 +122,16 @@ function JoinGroupModal({ onClose }) {
           <h2 className="font-bold text-base-content mb-4">Join Group</h2>
           <form onSubmit={submit} className="space-y-3">
             <input
-              value={code} onChange={(e) => setCode(e.target.value)}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
               placeholder="Invite code"
               className="input input-bordered w-full bg-base-300 border-base-300 focus:border-primary focus:outline-none text-sm font-mono"
               required
             />
             <div className="flex gap-2">
-              <button type="button" onClick={onClose} className="btn btn-ghost flex-1">Cancel</button>
+              <button type="button" onClick={onClose} className="btn btn-ghost flex-1">
+                Cancel
+              </button>
               <button type="submit" disabled={loading} className="btn btn-primary flex-1">
                 {loading ? <span className="loading loading-spinner loading-xs" /> : "Join"}
               </button>
@@ -130,12 +149,14 @@ function MsgContextMenu({ x, y, onReply, onReact, onClose }) {
   const ref = useRef(null);
 
   useEffect(() => {
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    const close = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) onClose();
+    };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, [onClose]);
 
-  const safeX = Math.min(x, window.innerWidth  - 220);
+  const safeX = Math.min(x, window.innerWidth - 220);
   const safeY = Math.min(y, window.innerHeight - 180);
 
   return (
@@ -153,7 +174,10 @@ function MsgContextMenu({ x, y, onReply, onReact, onClose }) {
         {QUICK_EMOJIS.map((e) => (
           <button
             key={e}
-            onClick={() => { onReact(e); onClose(); }}
+            onClick={() => {
+              onReact(e);
+              onClose();
+            }}
             className="w-8 h-8 flex items-center justify-center text-base hover:bg-base-300 rounded-lg transition-colors"
           >
             {e}
@@ -161,7 +185,10 @@ function MsgContextMenu({ x, y, onReply, onReact, onClose }) {
         ))}
       </div>
       <button
-        onClick={() => { onReply(); onClose(); }}
+        onClick={() => {
+          onReply();
+          onClose();
+        }}
         className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-base-300 text-base-content transition-colors text-left"
       >
         <CornerUpLeft size={14} /> Reply
@@ -173,33 +200,34 @@ function MsgContextMenu({ x, y, onReply, onReact, onClose }) {
 // ── Group chat ────────────────────────────────────────────────────────────────
 
 function GroupChat({ group, onBack }) {
-  const [text, setText]           = useState("");
+  const [text, setText] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
-  const [sending, setSending]     = useState(false);
+  const [sending, setSending] = useState(false);
   const [filePreview, setFilePreview] = useState(null);
-  const [replyTo, setReplyTo]     = useState(null);
-  const [ctx, setCtx]             = useState(null); // { x, y, msg }
+  const [replyTo, setReplyTo] = useState(null);
+  const [ctx, setCtx] = useState(null); // { x, y, msg }
   const [showGroupInfo, setShowGroupInfo] = useState(false);
 
-  const bottomRef   = useRef(null);
-  const fileRef     = useRef(null);
+  const bottomRef = useRef(null);
+  const fileRef = useRef(null);
   const typingTimer = useRef(null);
   const isTypingRef = useRef(false);
 
-  const messages      = useGroupStore((s) => s.messages);
+  const messages = useGroupStore((s) => s.messages);
   const isLoadingMsgs = useGroupStore((s) => s.isLoadingMsgs);
-  const sendMessage   = useGroupStore((s) => s.sendMessage);
+  const sendMessage = useGroupStore((s) => s.sendMessage);
   const toggleReaction = useGroupStore((s) => s.toggleReaction);
-  const typingUsers   = useGroupStore((s) => s.typingUsers);
-  const currentUser   = useSessionStore((s) => s.user);
+  const typingUsers = useGroupStore((s) => s.typingUsers);
+  const currentUser = useSessionStore((s) => s.user);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
   const isOwnerOrAdmin = group.members?.some(
-    (m) => String(m.userId?._id ?? m.userId) === String(currentUser?._id) &&
-           ["owner", "admin"].includes(m.role)
+    (m) =>
+      String(m.userId?._id ?? m.userId) === String(currentUser?._id) &&
+      ["owner", "admin"].includes(m.role),
   );
 
   const stopTyping = () => {
@@ -223,13 +251,20 @@ function GroupChat({ group, onBack }) {
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > FILE_MAX) { toast.error("Max 50 MB"); return; }
-    const ft = file.type.startsWith("image/") ? "image"
-      : file.type.startsWith("video/") ? "video"
-      : file.type.startsWith("audio/") ? "audio"
-      : "document";
+    if (file.size > FILE_MAX) {
+      toast.error("Max 50 MB");
+      return;
+    }
+    const ft = file.type.startsWith("image/")
+      ? "image"
+      : file.type.startsWith("video/")
+        ? "video"
+        : file.type.startsWith("audio/")
+          ? "audio"
+          : "document";
     const reader = new FileReader();
-    reader.onload = () => setFilePreview({ name: file.name, type: ft, size: file.size, data: reader.result });
+    reader.onload = () =>
+      setFilePreview({ name: file.name, type: ft, size: file.size, data: reader.result });
     reader.readAsDataURL(file);
     e.target.value = "";
   };
@@ -241,7 +276,7 @@ function GroupChat({ group, onBack }) {
     try {
       const payload = { text: text.trim() };
       if (replyTo) {
-        payload.replyTo        = replyTo._id;
+        payload.replyTo = replyTo._id;
         payload.replyToSnippet = replyTo.text || "";
       }
       if (filePreview) {
@@ -254,26 +289,37 @@ function GroupChat({ group, onBack }) {
         }
       }
       await sendMessage(payload);
-      setText(""); setFilePreview(null); setReplyTo(null);
-    } catch { toast.error("Failed to send"); }
-    finally { setSending(false); }
+      setText("");
+      setFilePreview(null);
+      setReplyTo(null);
+    } catch {
+      toast.error("Failed to send");
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
     if (e.key === "Escape") setReplyTo(null);
   };
 
   const handleContextMenu = (e, msg) => {
     e.preventDefault();
-    const safeX = Math.min(e.clientX, window.innerWidth  - 220);
+    const safeX = Math.min(e.clientX, window.innerWidth - 220);
     const safeY = Math.min(e.clientY, window.innerHeight - 180);
     setCtx({ x: safeX, y: safeY, msg });
   };
 
   const handleReact = async (msg, emoji) => {
-    try { await toggleReaction(msg._id, emoji); }
-    catch { toast.error("Failed to react"); }
+    try {
+      await toggleReaction(msg._id, emoji);
+    } catch {
+      toast.error("Failed to react");
+    }
   };
 
   const scrollToMsg = (id) => {
@@ -285,7 +331,10 @@ function GroupChat({ group, onBack }) {
   };
 
   const typingList = Array.from(typingUsers)
-    .map((id) => group.members?.find((m) => String(m.userId?._id ?? m.userId) === id)?.userId?.fullName)
+    .map(
+      (id) =>
+        group.members?.find((m) => String(m.userId?._id ?? m.userId) === id)?.userId?.fullName,
+    )
     .filter(Boolean);
 
   return (
@@ -300,10 +349,11 @@ function GroupChat({ group, onBack }) {
           className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-left"
         >
           <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-            {group.avatar
-              ? <img src={group.avatar} className="w-full h-full rounded-xl object-cover" />
-              : <Users size={18} className="text-primary" />
-            }
+            {group.avatar ? (
+              <img src={group.avatar} className="w-full h-full rounded-xl object-cover" />
+            ) : (
+              <Users size={18} className="text-primary" />
+            )}
           </div>
           <div className="min-w-0">
             <p className="font-semibold text-base-content truncate">{group.name}</p>
@@ -350,17 +400,20 @@ function GroupChat({ group, onBack }) {
             >
               {!mine && (
                 <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 mt-auto">
-                  {msg.senderId?.profilePic
-                    ? <img src={msg.senderId.profilePic} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full bg-primary flex items-center justify-center text-primary-content text-xs font-bold">
-                        {msg.senderId?.fullName?.[0]}
-                      </div>
-                  }
+                  {msg.senderId?.profilePic ? (
+                    <img src={msg.senderId.profilePic} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-primary flex items-center justify-center text-primary-content text-xs font-bold">
+                      {msg.senderId?.fullName?.[0]}
+                    </div>
+                  )}
                 </div>
               )}
               <div className="flex flex-col max-w-[70%]">
                 {!mine && (
-                  <p className="text-xs text-primary font-medium mb-0.5 ml-1">{msg.senderId?.fullName}</p>
+                  <p className="text-xs text-primary font-medium mb-0.5 ml-1">
+                    {msg.senderId?.fullName}
+                  </p>
                 )}
                 <div
                   className={`msg-hl px-4 py-2.5 shadow-sm rounded-2xl ${
@@ -383,12 +436,31 @@ function GroupChat({ group, onBack }) {
                     </div>
                   )}
 
-                  {msg.fileUrl && <FileCard fileUrl={msg.fileUrl} fileType={msg.fileType} fileName={msg.fileName} fileSize={msg.fileSize} isMine={mine} />}
-                  {msg.image && <img src={msg.image} alt="" className="max-w-xs rounded-xl mb-1.5 cursor-zoom-in" />}
+                  {msg.fileUrl && (
+                    <FileCard
+                      fileUrl={msg.fileUrl}
+                      fileType={msg.fileType}
+                      fileName={msg.fileName}
+                      fileSize={msg.fileSize}
+                      isMine={mine}
+                    />
+                  )}
+                  {msg.image && (
+                    <img
+                      src={msg.image}
+                      alt=""
+                      className="max-w-xs rounded-xl mb-1.5 cursor-zoom-in"
+                    />
+                  )}
                   {msg.text && <p className="text-sm leading-relaxed break-words">{msg.text}</p>}
                   <div className="flex justify-end mt-1">
-                    <span className={`text-[11px] ${mine ? "text-white/55" : "text-base-content/35"}`}>
-                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    <span
+                      className={`text-[11px] ${mine ? "text-white/55" : "text-base-content/35"}`}
+                    >
+                      {new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                   </div>
                 </div>
@@ -438,18 +510,27 @@ function GroupChat({ group, onBack }) {
       {/* Input */}
       <div className="px-4 py-3 border-t border-base-300 bg-base-200 flex-shrink-0">
         <div className="flex items-end gap-2">
-          <button onClick={() => fileRef.current?.click()} className="btn btn-ghost btn-circle btn-sm text-base-content/40 hover:text-primary flex-shrink-0">
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="btn btn-ghost btn-circle btn-sm text-base-content/40 hover:text-primary flex-shrink-0"
+          >
             <Paperclip size={18} />
           </button>
           <input ref={fileRef} type="file" className="hidden" onChange={handleFileSelect} />
 
           <div className="relative flex-shrink-0">
-            <button onClick={() => setShowEmoji((v) => !v)} className="btn btn-ghost btn-circle btn-sm text-base-content/40 hover:text-primary">
+            <button
+              onClick={() => setShowEmoji((v) => !v)}
+              className="btn btn-ghost btn-circle btn-sm text-base-content/40 hover:text-primary"
+            >
               <Smile size={18} />
             </button>
             {showEmoji && (
               <EmojiPickerPopup
-                onSelect={(e) => { setText((t) => t + e); setShowEmoji(false); }}
+                onSelect={(e) => {
+                  setText((t) => t + e);
+                  setShowEmoji(false);
+                }}
                 onClose={() => setShowEmoji(false)}
               />
             )}
@@ -478,9 +559,16 @@ function GroupChat({ group, onBack }) {
       <AnimatePresence>
         {ctx && (
           <MsgContextMenu
-            x={ctx.x} y={ctx.y}
-            onReply={() => { setReplyTo(ctx.msg); setCtx(null); }}
-            onReact={(e) => { handleReact(ctx.msg, e); setCtx(null); }}
+            x={ctx.x}
+            y={ctx.y}
+            onReply={() => {
+              setReplyTo(ctx.msg);
+              setCtx(null);
+            }}
+            onReact={(e) => {
+              handleReact(ctx.msg, e);
+              setCtx(null);
+            }}
             onClose={() => setCtx(null)}
           />
         )}
@@ -502,15 +590,15 @@ function GroupChat({ group, onBack }) {
 
 export default function GroupsScreen() {
   const [showCreate, setShowCreate] = useState(false);
-  const [showJoin, setShowJoin]     = useState(false);
-  const [query, setQuery]           = useState("");
+  const [showJoin, setShowJoin] = useState(false);
+  const [query, setQuery] = useState("");
 
-  const groups      = useGroupStore((s) => s.groups);
+  const groups = useGroupStore((s) => s.groups);
   const activeGroup = useGroupStore((s) => s.activeGroup);
-  const isLoading   = useGroupStore((s) => s.isLoading);
-  const setActive   = useGroupStore((s) => s.setActiveGroup);
+  const isLoading = useGroupStore((s) => s.isLoading);
+  const setActive = useGroupStore((s) => s.setActiveGroup);
   const clearActive = useGroupStore((s) => s.clearActiveGroup);
-  const leaveGroup  = useGroupStore((s) => s.leaveGroup);
+  const leaveGroup = useGroupStore((s) => s.leaveGroup);
 
   const filtered = groups.filter((g) => g.name.toLowerCase().includes(query.toLowerCase()));
 
@@ -527,14 +615,24 @@ export default function GroupsScreen() {
   return (
     <div className="flex-1 flex overflow-hidden">
       {/* Groups list */}
-      <div className={`${activeGroup ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-col bg-base-200 border-r border-base-300 flex-shrink-0`}>
+      <div
+        className={`${activeGroup ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-col bg-base-200 border-r border-base-300 flex-shrink-0`}
+      >
         <div className="px-4 py-3 flex items-center justify-between border-b border-base-300 flex-shrink-0">
           <h2 className="font-bold text-base-content">Groups</h2>
           <div className="flex gap-1">
-            <button onClick={() => setShowJoin(true)} className="btn btn-ghost btn-circle btn-sm" title="Join by invite">
+            <button
+              onClick={() => setShowJoin(true)}
+              className="btn btn-ghost btn-circle btn-sm"
+              title="Join by invite"
+            >
               <UserPlus size={15} />
             </button>
-            <button onClick={() => setShowCreate(true)} className="btn btn-primary btn-circle btn-sm" title="Create group">
+            <button
+              onClick={() => setShowCreate(true)}
+              className="btn btn-primary btn-circle btn-sm"
+              title="Create group"
+            >
               <Plus size={15} />
             </button>
           </div>
@@ -551,7 +649,9 @@ export default function GroupsScreen() {
 
         <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
           {isLoading ? (
-            <div className="flex justify-center pt-10"><span className="loading loading-ring loading-md text-primary" /></div>
+            <div className="flex justify-center pt-10">
+              <span className="loading loading-ring loading-md text-primary" />
+            </div>
           ) : filtered.length === 0 ? (
             <p className="text-center text-base-content/40 text-sm py-10">
               {groups.length === 0 ? "No groups yet — create or join one!" : "No groups found"}
@@ -568,10 +668,11 @@ export default function GroupsScreen() {
                 }`}
               >
                 <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  {g.avatar
-                    ? <img src={g.avatar} className="w-full h-full rounded-xl object-cover" />
-                    : <Users size={18} className="text-primary" />
-                  }
+                  {g.avatar ? (
+                    <img src={g.avatar} className="w-full h-full rounded-xl object-cover" />
+                  ) : (
+                    <Users size={18} className="text-primary" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm text-base-content truncate">{g.name}</p>
@@ -604,7 +705,7 @@ export default function GroupsScreen() {
 
       <AnimatePresence>
         {showCreate && <CreateGroupModal onClose={() => setShowCreate(false)} />}
-        {showJoin   && <JoinGroupModal   onClose={() => setShowJoin(false)} />}
+        {showJoin && <JoinGroupModal onClose={() => setShowJoin(false)} />}
       </AnimatePresence>
     </div>
   );

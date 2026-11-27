@@ -1,21 +1,33 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Moon, Sun, Bell, BellOff, Eye, EyeOff,
-  Monitor, Shield, User, Palette, Minimize2,
-  BadgeCheck, KeyRound, AlertTriangle,
+  ArrowLeft,
+  Moon,
+  Sun,
+  Bell,
+  BellOff,
+  Eye,
+  EyeOff,
+  Monitor,
+  Shield,
+  User,
+  Palette,
+  Minimize2,
+  BadgeCheck,
+  KeyRound,
+  AlertTriangle,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { usePrefsStore }  from "../store/prefs.store.js";
+import { usePrefsStore } from "../store/prefs.store.js";
 import { useSessionStore } from "../store/session.store.js";
-import { loadPrivateKey }  from "../lib/crypto.js";
-import AvatarWithStatus   from "../widgets/AvatarWithStatus.jsx";
+import { loadPrivateKey } from "../lib/crypto.js";
+import AvatarWithStatus from "../widgets/AvatarWithStatus.jsx";
 
 const TABS = [
-  { id: "profile",       label: "Profile",       icon: User    },
-  { id: "appearance",    label: "Appearance",     icon: Palette },
-  { id: "notifications", label: "Notifications",  icon: Bell    },
-  { id: "privacy",       label: "Privacy",        icon: Shield  },
+  { id: "profile", label: "Profile", icon: User },
+  { id: "appearance", label: "Appearance", icon: Palette },
+  { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "privacy", label: "Privacy", icon: Shield },
 ];
 
 function Toggle({ checked, onChange }) {
@@ -47,19 +59,19 @@ function Row({ icon: Icon, label, sub, right }) {
 // ─── Tab: Profile ─────────────────────────────────────────────────────────────
 
 function ProfileTab() {
-  const user              = useSessionStore((s) => s.user);
-  const updateProfile     = useSessionStore((s) => s.updateProfile);
-  const verifyEmail       = useSessionStore((s) => s.verifyEmail);
+  const user = useSessionStore((s) => s.user);
+  const updateProfile = useSessionStore((s) => s.updateProfile);
+  const verifyEmail = useSessionStore((s) => s.verifyEmail);
   const resendVerification = useSessionStore((s) => s.resendVerification);
 
-  const [bio, setBio]           = useState(user?.bio ?? "");
-  const [saving, setSaving]     = useState(false);
+  const [bio, setBio] = useState(user?.bio ?? "");
+  const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   const [showVerify, setShowVerify] = useState(false);
-  const [code, setCode]             = useState("");
-  const [sending, setSending]       = useState(false);
-  const [verifying, setVerifying]   = useState(false);
+  const [code, setCode] = useState("");
+  const [sending, setSending] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   const handleOpenVerify = async () => {
     setSending(true);
@@ -96,20 +108,31 @@ function ProfileTab() {
     try {
       await updateProfile({ bio });
       toast.success("Bio saved");
-    } catch { toast.error("Failed to save bio"); }
-    finally { setSaving(false); }
+    } catch {
+      toast.error("Failed to save bio");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast.error("Max 5 MB"); return; }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Max 5 MB");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = async () => {
       setUploading(true);
-      try { await updateProfile({ profilePic: reader.result }); toast.success("Avatar updated"); }
-      catch { toast.error("Upload failed"); }
-      finally { setUploading(false); }
+      try {
+        await updateProfile({ profilePic: reader.result });
+        toast.success("Avatar updated");
+      } catch {
+        toast.error("Upload failed");
+      } finally {
+        setUploading(false);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -120,12 +143,21 @@ function ProfileTab() {
       <div className="flex flex-col items-center gap-3 pt-2">
         <div className="relative">
           <AvatarWithStatus src={user?.profilePic} name={user?.fullName} size="lg" online />
-          <label className={`absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors ${uploading ? "bg-base-300" : "bg-ember-500 hover:bg-ember-400"}`}>
-            {uploading
-              ? <span className="loading loading-spinner loading-xs text-white" />
-              : <span className="text-white text-sm">📷</span>
-            }
-            <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} disabled={uploading} />
+          <label
+            className={`absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer shadow-md transition-colors ${uploading ? "bg-base-300" : "bg-ember-500 hover:bg-ember-400"}`}
+          >
+            {uploading ? (
+              <span className="loading loading-spinner loading-xs text-white" />
+            ) : (
+              <span className="text-white text-sm">📷</span>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+              disabled={uploading}
+            />
           </label>
         </div>
         <p className="text-xs text-base-content/40">Click camera to update</p>
@@ -142,10 +174,11 @@ function ProfileTab() {
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
               <p className="text-base-content">{user?.email}</p>
-              {user?.emailVerified
-                ? <BadgeCheck size={14} className="text-success flex-shrink-0" title="Verified" />
-                : <span className="text-xs text-warning font-medium">Not verified</span>
-              }
+              {user?.emailVerified ? (
+                <BadgeCheck size={14} className="text-success flex-shrink-0" title="Verified" />
+              ) : (
+                <span className="text-xs text-warning font-medium">Not verified</span>
+              )}
             </div>
             {!user?.emailVerified && !showVerify && (
               <button
@@ -153,10 +186,7 @@ function ProfileTab() {
                 disabled={sending}
                 className="btn btn-xs btn-outline btn-warning gap-1"
               >
-                {sending
-                  ? <span className="loading loading-spinner loading-xs" />
-                  : "Verify email"
-                }
+                {sending ? <span className="loading loading-spinner loading-xs" /> : "Verify email"}
               </button>
             )}
           </div>
@@ -165,7 +195,8 @@ function ProfileTab() {
           {showVerify && !user?.emailVerified && (
             <form onSubmit={handleVerifySubmit} className="mt-3 space-y-2">
               <p className="text-xs text-base-content/50">
-                Enter the 6-digit code sent to <span className="text-base-content font-medium">{user?.email}</span>
+                Enter the 6-digit code sent to{" "}
+                <span className="text-base-content font-medium">{user?.email}</span>
               </p>
               <div className="flex gap-2">
                 <input
@@ -196,7 +227,10 @@ function ProfileTab() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setShowVerify(false); setCode(""); }}
+                  onClick={() => {
+                    setShowVerify(false);
+                    setCode("");
+                  }}
                   className="text-xs text-base-content/30 hover:text-base-content transition-colors"
                 >
                   Cancel
@@ -229,7 +263,11 @@ function ProfileTab() {
           <p className="text-xs text-base-content/40 mb-1">Member since</p>
           <p className="text-base-content">
             {user?.createdAt
-              ? new Date(user.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+              ? new Date(user.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })
               : "—"}
           </p>
         </div>
@@ -241,12 +279,12 @@ function ProfileTab() {
 // ─── Tab: Appearance ──────────────────────────────────────────────────────────
 
 function AppearanceTab() {
-  const theme           = usePrefsStore((s) => s.theme);
-  const setTheme        = usePrefsStore((s) => s.setTheme);
-  const fontSize        = usePrefsStore((s) => s.fontSize);
-  const setFont         = usePrefsStore((s) => s.setFontSize);
-  const minimalistMode  = usePrefsStore((s) => s.minimalistMode);
-  const setMinimalist   = usePrefsStore((s) => s.setMinimalistMode);
+  const theme = usePrefsStore((s) => s.theme);
+  const setTheme = usePrefsStore((s) => s.setTheme);
+  const fontSize = usePrefsStore((s) => s.fontSize);
+  const setFont = usePrefsStore((s) => s.setFontSize);
+  const minimalistMode = usePrefsStore((s) => s.minimalistMode);
+  const setMinimalist = usePrefsStore((s) => s.setMinimalistMode);
 
   const isDark = theme === "nightwire";
 
@@ -257,24 +295,33 @@ function AppearanceTab() {
           icon={isDark ? Moon : Sun}
           label="Theme"
           sub={isDark ? "Dark — Ember Depths" : "Light — Dawn"}
-          right={<Toggle checked={isDark} onChange={() => setTheme(isDark ? "nightwire_light" : "nightwire")} />}
+          right={
+            <Toggle
+              checked={isDark}
+              onChange={() => setTheme(isDark ? "nightwire_light" : "nightwire")}
+            />
+          }
         />
         <Row
           icon={Minimize2}
           label="Minimalist mode"
           sub="Clean UI — hides decorative elements"
-          right={<Toggle checked={minimalistMode} onChange={() => setMinimalist(!minimalistMode)} />}
+          right={
+            <Toggle checked={minimalistMode} onChange={() => setMinimalist(!minimalistMode)} />
+          }
         />
       </div>
 
       <div>
-        <p className="text-xs font-medium uppercase tracking-wider text-base-content/40 px-1 mb-3">Font size</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-base-content/40 px-1 mb-3">
+          Font size
+        </p>
         <div className="bg-base-200 rounded-2xl p-4 border border-base-300">
           <div className="grid grid-cols-3 gap-2">
             {[
-              { id: "sm", label: "Compact",  sample: "Aa" },
-              { id: "md", label: "Normal",   sample: "Aa" },
-              { id: "lg", label: "Large",    sample: "Aa" },
+              { id: "sm", label: "Compact", sample: "Aa" },
+              { id: "md", label: "Normal", sample: "Aa" },
+              { id: "lg", label: "Large", sample: "Aa" },
             ].map(({ id, label, sample }) => (
               <button
                 key={id}
@@ -305,14 +352,14 @@ function AppearanceTab() {
 
 function NotificationsTab() {
   const soundOnMessage = usePrefsStore((s) => s.soundOnMessage);
-  const setSoundMsg    = usePrefsStore((s) => s.setSoundOnMessage);
-  const soundOnSend    = usePrefsStore((s) => s.soundOnSend);
-  const setSoundSend   = usePrefsStore((s) => s.setSoundOnSend);
-  const pushEnabled    = usePrefsStore((s) => s.pushEnabled);
-  const requestPush    = usePrefsStore((s) => s.requestPush);
+  const setSoundMsg = usePrefsStore((s) => s.setSoundOnMessage);
+  const soundOnSend = usePrefsStore((s) => s.soundOnSend);
+  const setSoundSend = usePrefsStore((s) => s.setSoundOnSend);
+  const pushEnabled = usePrefsStore((s) => s.pushEnabled);
+  const requestPush = usePrefsStore((s) => s.requestPush);
 
   const pushSupported = "Notification" in window;
-  const pushBlocked   = Notification.permission === "denied";
+  const pushBlocked = Notification.permission === "denied";
 
   return (
     <div className="bg-base-200 rounded-2xl divide-y divide-base-300 border border-base-300">
@@ -343,10 +390,7 @@ function NotificationsTab() {
             pushBlocked ? (
               <span className="text-xs text-error">Blocked</span>
             ) : (
-              <Toggle
-                checked={pushEnabled}
-                onChange={requestPush}
-              />
+              <Toggle checked={pushEnabled} onChange={requestPush} />
             )
           }
         />
@@ -358,25 +402,30 @@ function NotificationsTab() {
 // ─── Tab: Privacy ─────────────────────────────────────────────────────────────
 
 function PrivacyTab() {
-  const lastSeenVisibility    = usePrefsStore((s) => s.lastSeenVisibility);
-  const readReceiptsEnabled   = usePrefsStore((s) => s.readReceiptsEnabled);
-  const updatePrivacy         = usePrefsStore((s) => s.updatePrivacy);
-  const resetEncryptionKeys   = useSessionStore((s) => s.resetEncryptionKeys);
+  const lastSeenVisibility = usePrefsStore((s) => s.lastSeenVisibility);
+  const readReceiptsEnabled = usePrefsStore((s) => s.readReceiptsEnabled);
+  const updatePrivacy = usePrefsStore((s) => s.updatePrivacy);
+  const resetEncryptionKeys = useSessionStore((s) => s.resetEncryptionKeys);
   const [resetting, setResetting] = useState(false);
   const hasKey = !!loadPrivateKey();
 
   const handleChange = async (field, value) => {
     try {
       await updatePrivacy({ [field]: value });
-    } catch { toast.error("Failed to save"); }
+    } catch {
+      toast.error("Failed to save");
+    }
   };
 
   const handleResetKeys = async () => {
-    if (!window.confirm(
-      "This will generate new encryption keys and upload your new public key to the server.\n\n" +
-      "All previously encrypted messages will become permanently unreadable.\n\n" +
-      "Continue?"
-    )) return;
+    if (
+      !window.confirm(
+        "This will generate new encryption keys and upload your new public key to the server.\n\n" +
+          "All previously encrypted messages will become permanently unreadable.\n\n" +
+          "Continue?",
+      )
+    )
+      return;
     setResetting(true);
     try {
       await resetEncryptionKeys();
@@ -390,72 +439,76 @@ function PrivacyTab() {
 
   return (
     <div className="space-y-4">
-    <div className="bg-base-200 rounded-2xl divide-y divide-base-300 border border-base-300">
-      <Row
-        icon={lastSeenVisibility === "all" ? Eye : EyeOff}
-        label="Last seen"
-        sub={lastSeenVisibility === "all" ? "Visible to everyone" : "Hidden from everyone"}
-        right={
-          <Toggle
-            checked={lastSeenVisibility === "all"}
-            onChange={() =>
-              handleChange(
-                "lastSeenVisibility",
-                lastSeenVisibility === "all" ? "none" : "all"
-              )
-            }
-          />
-        }
-      />
-      <Row
-        icon={readReceiptsEnabled ? Eye : EyeOff}
-        label="Read receipts"
-        sub={readReceiptsEnabled ? "Others see when you read" : "Read receipts hidden"}
-        right={
-          <Toggle
-            checked={readReceiptsEnabled}
-            onChange={() => handleChange("readReceiptsEnabled", !readReceiptsEnabled)}
-          />
-        }
-      />
-    </div>
-
-    {/* Encryption */}
-    <div className="bg-base-200 rounded-2xl border border-base-300 overflow-hidden">
-      <div className="px-5 py-4 flex items-center gap-3 border-b border-base-300">
-        <KeyRound size={18} className="text-base-content/50 flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-base-content">End-to-end encryption</p>
-          <p className="text-xs text-base-content/40">
-            {hasKey ? "Private key found on this device" : "No private key on this device — messages cannot be decrypted here"}
-          </p>
-        </div>
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${hasKey ? "text-success bg-success/10" : "text-warning bg-warning/10"}`}>
-          {hasKey ? "Active" : "Missing"}
-        </span>
-      </div>
-      {!hasKey && (
-        <div className="px-5 py-3 flex items-start gap-2 bg-warning/5 border-b border-base-300">
-          <AlertTriangle size={14} className="text-warning flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-base-content/60 leading-relaxed">
-            Your private key is not available on this device (e.g. incognito mode or new browser). Existing messages cannot be decrypted. Use &quot;Reset keys&quot; to generate a new key pair so future messages work — this permanently clears old encrypted messages.
-          </p>
-        </div>
-      )}
-      <div className="px-5 py-4">
-        <button
-          onClick={handleResetKeys}
-          disabled={resetting}
-          className="btn btn-error btn-sm btn-outline gap-2"
-        >
-          {resetting
-            ? <span className="loading loading-spinner loading-xs" />
-            : <KeyRound size={13} />
+      <div className="bg-base-200 rounded-2xl divide-y divide-base-300 border border-base-300">
+        <Row
+          icon={lastSeenVisibility === "all" ? Eye : EyeOff}
+          label="Last seen"
+          sub={lastSeenVisibility === "all" ? "Visible to everyone" : "Hidden from everyone"}
+          right={
+            <Toggle
+              checked={lastSeenVisibility === "all"}
+              onChange={() =>
+                handleChange("lastSeenVisibility", lastSeenVisibility === "all" ? "none" : "all")
+              }
+            />
           }
-          Reset encryption keys
-        </button>
+        />
+        <Row
+          icon={readReceiptsEnabled ? Eye : EyeOff}
+          label="Read receipts"
+          sub={readReceiptsEnabled ? "Others see when you read" : "Read receipts hidden"}
+          right={
+            <Toggle
+              checked={readReceiptsEnabled}
+              onChange={() => handleChange("readReceiptsEnabled", !readReceiptsEnabled)}
+            />
+          }
+        />
       </div>
-    </div>
+
+      {/* Encryption */}
+      <div className="bg-base-200 rounded-2xl border border-base-300 overflow-hidden">
+        <div className="px-5 py-4 flex items-center gap-3 border-b border-base-300">
+          <KeyRound size={18} className="text-base-content/50 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-base-content">End-to-end encryption</p>
+            <p className="text-xs text-base-content/40">
+              {hasKey
+                ? "Private key found on this device"
+                : "No private key on this device — messages cannot be decrypted here"}
+            </p>
+          </div>
+          <span
+            className={`text-xs font-semibold px-2 py-0.5 rounded-full ${hasKey ? "text-success bg-success/10" : "text-warning bg-warning/10"}`}
+          >
+            {hasKey ? "Active" : "Missing"}
+          </span>
+        </div>
+        {!hasKey && (
+          <div className="px-5 py-3 flex items-start gap-2 bg-warning/5 border-b border-base-300">
+            <AlertTriangle size={14} className="text-warning flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-base-content/60 leading-relaxed">
+              Your private key is not available on this device (e.g. incognito mode or new browser).
+              Existing messages cannot be decrypted. Use &quot;Reset keys&quot; to generate a new
+              key pair so future messages work — this permanently clears old encrypted messages.
+            </p>
+          </div>
+        )}
+        <div className="px-5 py-4">
+          <button
+            onClick={handleResetKeys}
+            disabled={resetting}
+            className="btn btn-error btn-sm btn-outline gap-2"
+          >
+            {resetting ? (
+              <span className="loading loading-spinner loading-xs" />
+            ) : (
+              <KeyRound size={13} />
+            )}
+            Reset encryption keys
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -467,10 +520,10 @@ export default function SettingsScreen() {
   const navigate = useNavigate();
 
   const TAB_CONTENT = {
-    profile:       <ProfileTab />,
-    appearance:    <AppearanceTab />,
+    profile: <ProfileTab />,
+    appearance: <AppearanceTab />,
     notifications: <NotificationsTab />,
-    privacy:       <PrivacyTab />,
+    privacy: <PrivacyTab />,
   };
 
   return (
@@ -505,9 +558,7 @@ export default function SettingsScreen() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-lg mx-auto px-4 py-6">
-          {TAB_CONTENT[activeTab]}
-        </div>
+        <div className="max-w-lg mx-auto px-4 py-6">{TAB_CONTENT[activeTab]}</div>
       </div>
     </div>
   );

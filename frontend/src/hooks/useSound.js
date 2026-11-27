@@ -11,10 +11,7 @@ function synth(frequency, duration, volume = 0.12) {
     osc.type = "sine";
     osc.frequency.value = frequency;
     gain.gain.setValueAtTime(volume, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      ctx.currentTime + duration / 1000
-    );
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + duration / 1000);
   } catch {
@@ -24,7 +21,7 @@ function synth(frequency, duration, volume = 0.12) {
 
 export function useSound() {
   const soundOnMessage = usePrefsStore((s) => s.soundOnMessage);
-  const soundOnSend    = usePrefsStore((s) => s.soundOnSend);
+  const soundOnSend = usePrefsStore((s) => s.soundOnSend);
 
   const playPing = useCallback(() => {
     if (!soundOnMessage) return;

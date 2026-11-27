@@ -8,14 +8,18 @@ import { getIO } from "../../core/socket.js";
 export async function getDashboard(req, res) {
   try {
     const now = new Date();
-    const todayStart  = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekStart   = new Date(todayStart.getTime() - 6 * 86_400_000);
-    const monthStart  = new Date(now.getFullYear(), now.getMonth(), 1);
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(todayStart.getTime() - 6 * 86_400_000);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const [
-      totalUsers, totalMessages,
-      todayMessages, weekMessages, monthMessages,
-      pendingReports, totalGroups,
+      totalUsers,
+      totalMessages,
+      todayMessages,
+      weekMessages,
+      monthMessages,
+      pendingReports,
+      totalGroups,
     ] = await Promise.all([
       User.countDocuments(),
       Message.countDocuments(),
@@ -44,7 +48,16 @@ export async function getDashboard(req, res) {
     ]);
 
     return ok(res, {
-      stats: { totalUsers, totalMessages, todayMessages, weekMessages, monthMessages, pendingReports, totalGroups, onlineCount },
+      stats: {
+        totalUsers,
+        totalMessages,
+        todayMessages,
+        weekMessages,
+        monthMessages,
+        pendingReports,
+        totalGroups,
+        onlineCount,
+      },
       topUsers,
       hourlyStats,
     });
@@ -61,11 +74,11 @@ export async function getUsers(req, res) {
       const esc = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       filter.$or = [
         { fullName: { $regex: esc, $options: "i" } },
-        { email:    { $regex: esc, $options: "i" } },
+        { email: { $regex: esc, $options: "i" } },
       ];
     }
 
-    const skip  = (parseInt(page) - 1) * parseInt(limit);
+    const skip = (parseInt(page) - 1) * parseInt(limit);
     const [users, total] = await Promise.all([
       User.find(filter)
         .select("-password -emailVerificationCode -emailVerificationExpiry")
@@ -75,7 +88,12 @@ export async function getUsers(req, res) {
       User.countDocuments(filter),
     ]);
 
-    return ok(res, { users, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) });
+    return ok(res, {
+      users,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit)),
+    });
   } catch (err) {
     return fail(res, err.message);
   }
@@ -86,12 +104,13 @@ export async function updateUser(req, res) {
     const { isBlocked, isAdmin } = req.body;
     const updates = {};
     if (typeof isBlocked !== "undefined") updates.isBlocked = isBlocked;
-    if (typeof isAdmin   !== "undefined") updates.isAdmin   = isAdmin;
+    if (typeof isAdmin !== "undefined") updates.isAdmin = isAdmin;
 
     if (Object.keys(updates).length === 0) return fail(res, "Nothing to update", 400);
 
-    const updated = await User.findByIdAndUpdate(req.params.id, updates, { new: true })
-      .select("-password");
+    const updated = await User.findByIdAndUpdate(req.params.id, updates, { new: true }).select(
+      "-password",
+    );
     if (!updated) return fail(res, "User not found", 404);
 
     return ok(res, { user: updated });
@@ -112,9 +131,7 @@ export async function deleteUser(req, res) {
 
 export async function getGroupsAdmin(req, res) {
   try {
-    const groups = await Group.find()
-      .populate("ownerId", "fullName email")
-      .sort({ createdAt: -1 });
+    const groups = await Group.find().populate("ownerId", "fullName email").sort({ createdAt: -1 });
     return ok(res, { groups });
   } catch (err) {
     return fail(res, err.message);
@@ -149,7 +166,7 @@ export async function updateReport(req, res) {
     const report = await Report.findByIdAndUpdate(
       req.params.id,
       { status, adminNote },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).populate("reporterId", "fullName email");
     if (!report) return fail(res, "Report not found", 404);
     return ok(res, { report });

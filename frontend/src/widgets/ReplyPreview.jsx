@@ -14,10 +14,7 @@ export default function ReplyPreview({ msg, onCancel }) {
           </p>
         )}
       </div>
-      <button
-        onClick={onCancel}
-        className="btn btn-ghost btn-xs btn-circle flex-shrink-0"
-      >
+      <button onClick={onCancel} className="btn btn-ghost btn-xs btn-circle flex-shrink-0">
         <X size={12} />
       </button>
     </div>

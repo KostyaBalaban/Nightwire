@@ -12,11 +12,11 @@ import {
 
 export const authRouter = Router();
 
-authRouter.post("/signup",  signup);
-authRouter.post("/login",   login);
-authRouter.post("/logout",  logout);
+authRouter.post("/signup", signup);
+authRouter.post("/login", login);
+authRouter.post("/logout", logout);
 
-authRouter.get("/check",             requireSession, checkSession);
-authRouter.put("/update-profile",    requireSession, updateProfile);
-authRouter.post("/verify-email",     requireSession, verifyEmail);
-authRouter.post("/resend-verify",    requireSession, resendVerification);
+authRouter.get("/check", requireSession, checkSession);
+authRouter.put("/update-profile", requireSession, updateProfile);
+authRouter.post("/verify-email", requireSession, verifyEmail);
+authRouter.post("/resend-verify", requireSession, resendVerification);

@@ -1,28 +1,35 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Send, Paperclip, X,
-  MessageSquare, Smile, MoreVertical, Edit2, Trash2,
+  ArrowLeft,
+  Send,
+  Paperclip,
+  X,
+  MessageSquare,
+  Smile,
+  MoreVertical,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { useChatStore }   from "../../store/chat.store.js";
+import { useChatStore } from "../../store/chat.store.js";
 import { useSessionStore } from "../../store/session.store.js";
-import { socket }          from "../../lib/socket.js";
-import { useSound }        from "../../hooks/useSound.js";
-import { encryptMessage }  from "../../lib/crypto.js";
-import { loadPrivateKey }  from "../../lib/crypto.js";
+import { socket } from "../../lib/socket.js";
+import { useSound } from "../../hooks/useSound.js";
+import { encryptMessage } from "../../lib/crypto.js";
+import { loadPrivateKey } from "../../lib/crypto.js";
 
-import MessageBubble      from "../../widgets/MessageBubble.jsx";
-import AvatarWithStatus   from "../../widgets/AvatarWithStatus.jsx";
-import TypingIndicator    from "../../widgets/TypingIndicator.jsx";
-import ReplyPreview       from "../../widgets/ReplyPreview.jsx";
-import EmojiPickerPopup   from "../../widgets/EmojiPickerPopup.jsx";
-import ImageModal         from "../../widgets/ImageModal.jsx";
-import ClearChatModal     from "../../widgets/ClearChatModal.jsx";
-import LastSeenLabel      from "../../widgets/LastSeenLabel.jsx";
-import EncryptionBadge    from "../../widgets/EncryptionBadge.jsx";
-import UserProfileModal   from "../../widgets/UserProfileModal.jsx";
+import MessageBubble from "../../widgets/MessageBubble.jsx";
+import AvatarWithStatus from "../../widgets/AvatarWithStatus.jsx";
+import TypingIndicator from "../../widgets/TypingIndicator.jsx";
+import ReplyPreview from "../../widgets/ReplyPreview.jsx";
+import EmojiPickerPopup from "../../widgets/EmojiPickerPopup.jsx";
+import ImageModal from "../../widgets/ImageModal.jsx";
+import ClearChatModal from "../../widgets/ClearChatModal.jsx";
+import LastSeenLabel from "../../widgets/LastSeenLabel.jsx";
+import EncryptionBadge from "../../widgets/EncryptionBadge.jsx";
+import UserProfileModal from "../../widgets/UserProfileModal.jsx";
 import { MessageSkeleton } from "../../widgets/SkeletonLoader.jsx";
 
 const FILE_MAX = 50 * 1024 * 1024; // 50 MB
@@ -35,51 +42,56 @@ function fileTypeFromMime(mimeType) {
 }
 
 export default function ConvoWindow() {
-  const [text, setText]               = useState("");
+  const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
-  const [filePreview, setFilePreview]  = useState(null); // { name, type, size, data }
-  const [sending, setSending]         = useState(false);
-  const [showEmoji, setShowEmoji]     = useState(false);
-  const [imageModal, setImageModal]   = useState({ open: false, src: "" });
+  const [filePreview, setFilePreview] = useState(null); // { name, type, size, data }
+  const [sending, setSending] = useState(false);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [imageModal, setImageModal] = useState({ open: false, src: "" });
   const [showClearChat, setShowClearChat] = useState(false);
   const [showHeaderMenu, setShowHeaderMenu] = useState(false);
-  const [isDragging, setIsDragging]   = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
-  const bottomRef       = useRef(null);
-  const fileRef         = useRef(null);
-  const typingTimer     = useRef(null);
-  const isTypingRef     = useRef(false);
-  const headerMenuRef   = useRef(null);
-  const dropZoneRef     = useRef(null);
+  const bottomRef = useRef(null);
+  const fileRef = useRef(null);
+  const typingTimer = useRef(null);
+  const isTypingRef = useRef(false);
+  const headerMenuRef = useRef(null);
+  const dropZoneRef = useRef(null);
 
-  const activeUser        = useChatStore((s) => s.activeUser);
-  const clearActiveUser   = useChatStore((s) => s.clearActiveUser);
-  const messages          = useChatStore((s) => s.messages);
+  const activeUser = useChatStore((s) => s.activeUser);
+  const clearActiveUser = useChatStore((s) => s.clearActiveUser);
+  const messages = useChatStore((s) => s.messages);
   const isLoadingMessages = useChatStore((s) => s.isLoadingMessages);
-  const sendMessageStore  = useChatStore((s) => s.sendMessage);
-  const onlineUsers       = useChatStore((s) => s.onlineUsers);
-  const typingUsers       = useChatStore((s) => s.typingUsers);
-  const replyTo           = useChatStore((s) => s.replyTo);
-  const clearReplyTo      = useChatStore((s) => s.clearReplyTo);
-  const editingMessage    = useChatStore((s) => s.editingMessage);
-  const clearEditing      = useChatStore((s) => s.clearEditingMessage);
-  const editMessageStore  = useChatStore((s) => s.editMessage);
-  const clearChatStore    = useChatStore((s) => s.clearChatHistory);
-  const currentUser       = useSessionStore((s) => s.user);
-  const { playSend }      = useSound();
+  const sendMessageStore = useChatStore((s) => s.sendMessage);
+  const onlineUsers = useChatStore((s) => s.onlineUsers);
+  const typingUsers = useChatStore((s) => s.typingUsers);
+  const replyTo = useChatStore((s) => s.replyTo);
+  const clearReplyTo = useChatStore((s) => s.clearReplyTo);
+  const editingMessage = useChatStore((s) => s.editingMessage);
+  const clearEditing = useChatStore((s) => s.clearEditingMessage);
+  const editMessageStore = useChatStore((s) => s.editMessage);
+  const clearChatStore = useChatStore((s) => s.clearChatHistory);
+  const currentUser = useSessionStore((s) => s.user);
+  const { playSend } = useSound();
 
-  const isOnline       = activeUser && onlineUsers.includes(activeUser._id);
+  const isOnline = activeUser && onlineUsers.includes(activeUser._id);
   const isActiveTyping = activeUser && typingUsers.has(String(activeUser._id));
-  const allImages      = messages.filter((m) => m.image && !m.isDeletedForEveryone).map((m) => m.image);
+  const allImages = messages.filter((m) => m.image && !m.isDeletedForEveryone).map((m) => m.image);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length, isActiveTyping]);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length, isActiveTyping]);
   useEffect(() => {
     if (editingMessage) setText(editingMessage.text ?? "");
     else setText("");
   }, [editingMessage?._id]);
   useEffect(() => {
-    const handler = (e) => { if (headerMenuRef.current && !headerMenuRef.current.contains(e.target)) setShowHeaderMenu(false); };
+    const handler = (e) => {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(e.target))
+        setShowHeaderMenu(false);
+    };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
@@ -88,7 +100,10 @@ export default function ConvoWindow() {
 
   const processFile = (file) => {
     if (!file) return;
-    if (file.size > FILE_MAX) { toast.error("Max file size is 50 MB"); return; }
+    if (file.size > FILE_MAX) {
+      toast.error("Max file size is 50 MB");
+      return;
+    }
     const fType = fileTypeFromMime(file.type);
     const reader = new FileReader();
     reader.onload = () => {
@@ -103,8 +118,13 @@ export default function ConvoWindow() {
     reader.readAsDataURL(file);
   };
 
-  const handleDragOver = useCallback((e) => { e.preventDefault(); setIsDragging(true); }, []);
-  const handleDragLeave = useCallback((e) => { if (!e.currentTarget.contains(e.relatedTarget)) setIsDragging(false); }, []);
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+  const handleDragLeave = useCallback((e) => {
+    if (!e.currentTarget.contains(e.relatedTarget)) setIsDragging(false);
+  }, []);
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -131,13 +151,19 @@ export default function ConvoWindow() {
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   const stopTyping = () => {
-    if (isTypingRef.current) { isTypingRef.current = false; socket.emit("typing:stop", { receiverId: activeUser._id }); }
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      socket.emit("typing:stop", { receiverId: activeUser._id });
+    }
     clearTimeout(typingTimer.current);
   };
 
   const handleTextChange = (e) => {
     setText(e.target.value);
-    if (!isTypingRef.current) { isTypingRef.current = true; socket.emit("typing:start", { receiverId: activeUser._id }); }
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      socket.emit("typing:start", { receiverId: activeUser._id });
+    }
     clearTimeout(typingTimer.current);
     typingTimer.current = setTimeout(stopTyping, 2500);
   };
@@ -145,8 +171,12 @@ export default function ConvoWindow() {
   const handleSend = async () => {
     if (editingMessage) {
       if (!text.trim()) return;
-      try { await editMessageStore(editingMessage._id, text.trim()); clearEditing(); }
-      catch { toast.error("Failed to edit message"); }
+      try {
+        await editMessageStore(editingMessage._id, text.trim());
+        clearEditing();
+      } catch {
+        toast.error("Failed to edit message");
+      }
       return;
     }
 
@@ -160,9 +190,9 @@ export default function ConvoWindow() {
       if (text.trim()) {
         const privKey = loadPrivateKey();
         if (activeUser.publicKey && privKey) {
-          payload.text           = await encryptMessage(text.trim(), activeUser.publicKey);
-          payload.isEncrypted    = true;
-          payload._localText     = text.trim();
+          payload.text = await encryptMessage(text.trim(), activeUser.publicKey);
+          payload.isEncrypted = true;
+          payload._localText = text.trim();
         } else {
           payload.text = text.trim();
         }
@@ -190,26 +220,50 @@ export default function ConvoWindow() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
     if (e.key === "Escape" && editingMessage) clearEditing();
   };
 
-  const handleFileSelect = (e) => { processFile(e.target.files[0]); e.target.value = ""; };
+  const handleFileSelect = (e) => {
+    processFile(e.target.files[0]);
+    e.target.value = "";
+  };
 
   const handleScrollToMsg = (msgId) => {
     const el = document.getElementById(`msg-${msgId}`);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.querySelector(".msg-highlight-target")?.classList.add("ring-2", "ring-primary", "ring-offset-1");
-    setTimeout(() => el.querySelector(".msg-highlight-target")?.classList.remove("ring-2", "ring-primary", "ring-offset-1"), 1600);
+    el.querySelector(".msg-highlight-target")?.classList.add(
+      "ring-2",
+      "ring-primary",
+      "ring-offset-1",
+    );
+    setTimeout(
+      () =>
+        el
+          .querySelector(".msg-highlight-target")
+          ?.classList.remove("ring-2", "ring-primary", "ring-offset-1"),
+      1600,
+    );
   };
 
   const handleClearChat = async () => {
-    try { await clearChatStore(activeUser._id); setShowClearChat(false); toast.success("Chat cleared"); }
-    catch { toast.error("Failed to clear chat"); }
+    try {
+      await clearChatStore(activeUser._id);
+      setShowClearChat(false);
+      toast.success("Chat cleared");
+    } catch {
+      toast.error("Failed to clear chat");
+    }
   };
 
-  const cancelEdit = () => { clearEditing(); setText(""); };
+  const cancelEdit = () => {
+    clearEditing();
+    setText("");
+  };
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -238,24 +292,32 @@ export default function ConvoWindow() {
           onClick={() => setShowProfile(true)}
           className="flex items-center gap-3 flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
         >
-          <AvatarWithStatus src={activeUser.profilePic} name={activeUser.fullName} online={isOnline} />
+          <AvatarWithStatus
+            src={activeUser.profilePic}
+            name={activeUser.fullName}
+            online={isOnline}
+          />
           <div className="min-w-0">
             <p className="font-semibold text-base-content truncate">{activeUser.fullName}</p>
             <LastSeenLabel user={activeUser} isOnline={isOnline} />
           </div>
         </button>
-        {activeUser.publicKey && loadPrivateKey() && (
-          <EncryptionBadge />
-        )}
+        {activeUser.publicKey && loadPrivateKey() && <EncryptionBadge />}
         <div className="relative" ref={headerMenuRef}>
-          <button className="btn btn-ghost btn-circle btn-sm" onClick={() => setShowHeaderMenu((v) => !v)}>
+          <button
+            className="btn btn-ghost btn-circle btn-sm"
+            onClick={() => setShowHeaderMenu((v) => !v)}
+          >
             <MoreVertical size={16} className="text-base-content/60" />
           </button>
           {showHeaderMenu && (
             <div className="absolute right-0 top-9 bg-base-200 border border-base-300 rounded-xl shadow-xl z-30 overflow-hidden min-w-[160px]">
               <button
                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-base-300 text-error transition-colors"
-                onClick={() => { setShowClearChat(true); setShowHeaderMenu(false); }}
+                onClick={() => {
+                  setShowClearChat(true);
+                  setShowHeaderMenu(false);
+                }}
               >
                 <Trash2 size={14} /> Clear history
               </button>
@@ -295,7 +357,9 @@ export default function ConvoWindow() {
             <p className="text-xs text-primary mb-0.5 font-medium">Editing</p>
             <p className="text-xs text-base-content/60 truncate">{editingMessage.text}</p>
           </div>
-          <button onClick={cancelEdit} className="btn btn-ghost btn-xs btn-circle flex-shrink-0"><X size={12} /></button>
+          <button onClick={cancelEdit} className="btn btn-ghost btn-xs btn-circle flex-shrink-0">
+            <X size={12} />
+          </button>
         </div>
       )}
 
@@ -307,7 +371,12 @@ export default function ConvoWindow() {
         <div className="px-4 py-2 bg-base-200 border-t border-base-300 flex-shrink-0">
           <div className="relative inline-block">
             <img src={imagePreview} alt="preview" className="h-20 rounded-lg object-cover" />
-            <button onClick={() => setImagePreview(null)} className="absolute -top-2 -right-2 btn btn-circle btn-xs btn-error"><X size={10} /></button>
+            <button
+              onClick={() => setImagePreview(null)}
+              className="absolute -top-2 -right-2 btn btn-circle btn-xs btn-error"
+            >
+              <X size={10} />
+            </button>
           </div>
         </div>
       )}
@@ -317,27 +386,44 @@ export default function ConvoWindow() {
         <div className="px-4 py-2 bg-base-200 border-t border-base-300 flex items-center gap-3 flex-shrink-0">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-base-content truncate">{filePreview.name}</p>
-            <p className="text-xs text-base-content/40">{filePreview.type} · {(filePreview.size / 1024 / 1024).toFixed(1)} MB</p>
+            <p className="text-xs text-base-content/40">
+              {filePreview.type} · {(filePreview.size / 1024 / 1024).toFixed(1)} MB
+            </p>
           </div>
-          <button onClick={() => setFilePreview(null)} className="btn btn-ghost btn-xs btn-circle"><X size={12} /></button>
+          <button onClick={() => setFilePreview(null)} className="btn btn-ghost btn-xs btn-circle">
+            <X size={12} />
+          </button>
         </div>
       )}
 
       {/* Input row */}
       <div className="px-4 py-3 border-t border-base-300 bg-base-200 flex-shrink-0">
         <div className="flex items-end gap-2">
-          <button type="button" onClick={() => fileRef.current?.click()} className="btn btn-ghost btn-circle btn-sm text-base-content/40 hover:text-primary flex-shrink-0" title="Attach file">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="btn btn-ghost btn-circle btn-sm text-base-content/40 hover:text-primary flex-shrink-0"
+            title="Attach file"
+          >
             <Paperclip size={18} />
           </button>
           <input ref={fileRef} type="file" className="hidden" onChange={handleFileSelect} />
 
           <div className="relative flex-shrink-0">
-            <button type="button" onClick={() => setShowEmoji((v) => !v)} className="btn btn-ghost btn-circle btn-sm text-base-content/40 hover:text-primary" title="Emoji">
+            <button
+              type="button"
+              onClick={() => setShowEmoji((v) => !v)}
+              className="btn btn-ghost btn-circle btn-sm text-base-content/40 hover:text-primary"
+              title="Emoji"
+            >
               <Smile size={18} />
             </button>
             {showEmoji && (
               <EmojiPickerPopup
-                onSelect={(emoji) => { setText((t) => t + emoji); setShowEmoji(false); }}
+                onSelect={(emoji) => {
+                  setText((t) => t + emoji);
+                  setShowEmoji(false);
+                }}
                 onClose={() => setShowEmoji(false)}
               />
             )}
@@ -379,12 +465,20 @@ export default function ConvoWindow() {
       {/* Overlays */}
       <AnimatePresence>
         {imageModal.open && (
-          <ImageModal src={imageModal.src} images={allImages} onClose={() => setImageModal({ open: false, src: "" })} />
+          <ImageModal
+            src={imageModal.src}
+            images={allImages}
+            onClose={() => setImageModal({ open: false, src: "" })}
+          />
         )}
       </AnimatePresence>
       <AnimatePresence>
         {showClearChat && (
-          <ClearChatModal userName={activeUser.fullName} onConfirm={handleClearChat} onClose={() => setShowClearChat(false)} />
+          <ClearChatModal
+            userName={activeUser.fullName}
+            onConfirm={handleClearChat}
+            onClose={() => setShowClearChat(false)}
+          />
         )}
       </AnimatePresence>
     </div>

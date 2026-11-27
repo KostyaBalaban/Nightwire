@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
-import { User }    from "../modules/auth/user.schema.js";
+import { User } from "../modules/auth/user.schema.js";
 import { Message } from "../modules/messaging/message.schema.js";
-import { Group }   from "../modules/groups/group.schema.js";
+import { Group } from "../modules/groups/group.schema.js";
 import { resolveSessionUser, SESSION_COOKIE } from "../guards/session.guard.js";
 
 function readCookie(header, name) {
@@ -9,17 +9,20 @@ function readCookie(header, name) {
     const idx = part.indexOf("=");
     if (idx === -1) continue;
     if (part.slice(0, idx).trim() === name) {
-      try { return decodeURIComponent(part.slice(idx + 1).trim()); }
-      catch { return null; }
+      try {
+        return decodeURIComponent(part.slice(idx + 1).trim());
+      } catch {
+        return null;
+      }
     }
   }
   return null;
 }
 
 // userId (string) → socketId
-const onlineMap  = new Map();
+const onlineMap = new Map();
 // userIds who have lastSeenVisibility = "none"
-const hiddenSet  = new Set();
+const hiddenSet = new Set();
 
 let io;
 
@@ -52,21 +55,25 @@ export function initSocket(httpServer) {
         const u = await User.findById(userId).select("lastSeenVisibility");
         if (u?.lastSeenVisibility === "none") hiddenSet.add(userId);
         else hiddenSet.delete(userId);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       broadcastOnlineUsers();
 
       // Mark previously-sent messages as delivered now that user is online
       Message.updateMany(
         { receiverId: userId, status: "sent" },
-        { $set: { status: "delivered" } }
+        { $set: { status: "delivered" } },
       ).catch(() => {});
 
       // Auto-join socket rooms for user's groups
       try {
         const groups = await Group.find({ "members.userId": userId }).select("_id");
         groups.forEach((g) => socket.join(`group:${g._id}`));
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
 
     // Real-time privacy update: client emits this when toggling lastSeenVisibility
@@ -105,7 +112,7 @@ export function initSocket(httpServer) {
         const now = new Date();
         await Message.updateMany(
           { senderId, receiverId: userId, status: { $ne: "read" } },
-          { $set: { status: "read", readAt: now } }
+          { $set: { status: "read", readAt: now } },
         );
         const senderSid = onlineMap.get(String(senderId));
         if (senderSid) {
@@ -123,7 +130,9 @@ export function initSocket(httpServer) {
         broadcastOnlineUsers();
         try {
           await User.findByIdAndUpdate(userId, { lastSeen: new Date() });
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     });
   });

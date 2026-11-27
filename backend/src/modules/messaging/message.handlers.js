@@ -41,7 +41,17 @@ export async function getHistory(req, res) {
 
 export async function sendMessage(req, res) {
   try {
-    const { text, image, fileData, fileType, fileName, fileSize, replyTo, replyToSnippet, isEncrypted } = req.body;
+    const {
+      text,
+      image,
+      fileData,
+      fileType,
+      fileName,
+      fileSize,
+      replyTo,
+      replyToSnippet,
+      isEncrypted,
+    } = req.body;
     const receiverId = req.params.id;
 
     const msg = await createMessage({
@@ -134,11 +144,11 @@ export async function reactToMessage(req, res) {
     const msg = await toggleReaction(req.params.id, req.user._id, emoji);
 
     // Notify the other party in real-time
-    const otherId = String(msg.senderId) === String(req.user._id)
-      ? String(msg.receiverId)
-      : String(msg.senderId);
+    const otherId =
+      String(msg.senderId) === String(req.user._id) ? String(msg.receiverId) : String(msg.senderId);
     const sid = getSocketId(otherId);
-    if (sid) getIO().to(sid).emit("message:reaction", { messageId: msg._id, reactions: msg.reactions });
+    if (sid)
+      getIO().to(sid).emit("message:reaction", { messageId: msg._id, reactions: msg.reactions });
 
     return ok(res, { message: msg });
   } catch (err) {

@@ -4,12 +4,12 @@ import { Search, Settings, LogOut, UserCircle, Zap, SearchIcon } from "lucide-re
 import { AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
-import { useChatStore }   from "../../store/chat.store.js";
+import { useChatStore } from "../../store/chat.store.js";
 import { useSessionStore } from "../../store/session.store.js";
-import AvatarWithStatus   from "../../widgets/AvatarWithStatus.jsx";
-import ThemeToggle        from "../../widgets/ThemeToggle.jsx";
-import SearchModal        from "../../widgets/SearchModal.jsx";
-import { UserSkeleton }   from "../../widgets/SkeletonLoader.jsx";
+import AvatarWithStatus from "../../widgets/AvatarWithStatus.jsx";
+import ThemeToggle from "../../widgets/ThemeToggle.jsx";
+import SearchModal from "../../widgets/SearchModal.jsx";
+import { UserSkeleton } from "../../widgets/SkeletonLoader.jsx";
 
 function formatPreviewTime(dateStr) {
   if (!dateStr) return "";
@@ -28,7 +28,7 @@ function ThreadCard({ user, isActive, isOnline, unread, preview, onClick }) {
       ? "Message deleted"
       : lastMsg.image && !lastMsg.text
         ? "📷 Photo"
-        : lastMsg.text?.slice(0, 42) ?? ""
+        : (lastMsg.text?.slice(0, 42) ?? "")
     : isOnline
       ? "Online"
       : "";
@@ -46,7 +46,9 @@ function ThreadCard({ user, isActive, isOnline, unread, preview, onClick }) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline justify-between gap-1">
-          <p className={`font-medium text-sm truncate ${isActive ? "text-primary" : "text-base-content"}`}>
+          <p
+            className={`font-medium text-sm truncate ${isActive ? "text-primary" : "text-base-content"}`}
+          >
             {user.fullName}
           </p>
           {lastMsg && (
@@ -56,11 +58,11 @@ function ThreadCard({ user, isActive, isOnline, unread, preview, onClick }) {
           )}
         </div>
         <div className="flex items-center justify-between gap-1 mt-0.5">
-          <p className={`text-xs truncate ${
-            lastMsg?.isDeletedForEveryone
-              ? "italic text-base-content/30"
-              : "text-base-content/50"
-          }`}>
+          <p
+            className={`text-xs truncate ${
+              lastMsg?.isDeletedForEveryone ? "italic text-base-content/30" : "text-base-content/50"
+            }`}
+          >
             {previewText}
           </p>
           {unread > 0 && (
@@ -75,24 +77,22 @@ function ThreadCard({ user, isActive, isOnline, unread, preview, onClick }) {
 }
 
 export default function ThreadsPanel() {
-  const [query, setQuery]           = useState("");
+  const [query, setQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
 
-  const users          = useChatStore((s) => s.users);
-  const activeUser     = useChatStore((s) => s.activeUser);
-  const onlineUsers    = useChatStore((s) => s.onlineUsers);
-  const setActiveUser  = useChatStore((s) => s.setActiveUser);
-  const unreadCounts   = useChatStore((s) => s.unreadCounts);
-  const previews       = useChatStore((s) => s.previews);
+  const users = useChatStore((s) => s.users);
+  const activeUser = useChatStore((s) => s.activeUser);
+  const onlineUsers = useChatStore((s) => s.onlineUsers);
+  const setActiveUser = useChatStore((s) => s.setActiveUser);
+  const unreadCounts = useChatStore((s) => s.unreadCounts);
+  const previews = useChatStore((s) => s.previews);
   const isLoadingUsers = useChatStore((s) => s.isLoadingUsers);
 
   const currentUser = useSessionStore((s) => s.user);
-  const logout      = useSessionStore((s) => s.logout);
-  const navigate    = useNavigate();
+  const logout = useSessionStore((s) => s.logout);
+  const navigate = useNavigate();
 
-  const filtered = users.filter((u) =>
-    u.fullName.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = users.filter((u) => u.fullName.toLowerCase().includes(query.toLowerCase()));
 
   // Sort: unread first, then by last message time, then online, then alpha
   const sorted = [...filtered].sort((a, b) => {
@@ -118,8 +118,11 @@ export default function ThreadsPanel() {
   const withoutHistory = sorted.filter((u) => !previews[String(u._id)]);
 
   const handleLogout = async () => {
-    try { await logout(); }
-    catch { toast.error("Logout failed"); }
+    try {
+      await logout();
+    } catch {
+      toast.error("Logout failed");
+    }
   };
 
   const handleSearchNavigate = (msg) => {
@@ -127,9 +130,7 @@ export default function ThreadsPanel() {
       String(msg.senderId?._id ?? msg.senderId) === String(currentUser?._id)
         ? msg.receiverId
         : msg.senderId;
-    const partner = users.find(
-      (u) => String(u._id) === String(partnerId?._id ?? partnerId)
-    );
+    const partner = users.find((u) => String(u._id) === String(partnerId?._id ?? partnerId));
     if (partner) setActiveUser(partner);
   };
 
@@ -182,7 +183,12 @@ export default function ThreadsPanel() {
         className="px-4 py-2.5 flex items-center gap-3 border-b border-base-300 cursor-pointer hover:bg-base-300/40 transition-colors flex-shrink-0"
         onClick={() => navigate("/profile")}
       >
-        <AvatarWithStatus src={currentUser?.profilePic} name={currentUser?.fullName} size="sm" online />
+        <AvatarWithStatus
+          src={currentUser?.profilePic}
+          name={currentUser?.fullName}
+          size="sm"
+          online
+        />
         <div className="min-w-0">
           <p className="text-sm font-medium text-base-content truncate">{currentUser?.fullName}</p>
           <p className="text-xs text-green-400">Active now</p>
@@ -192,7 +198,10 @@ export default function ThreadsPanel() {
       {/* Local search */}
       <div className="px-3 py-3 flex-shrink-0">
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40" />
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40"
+          />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -247,9 +256,7 @@ export default function ThreadsPanel() {
             )}
 
             {sorted.length === 0 && (
-              <p className="text-center text-base-content/40 text-sm py-10">
-                No users found
-              </p>
+              <p className="text-center text-base-content/40 text-sm py-10">No users found</p>
             )}
           </>
         )}
@@ -258,10 +265,7 @@ export default function ThreadsPanel() {
       {/* Global search modal */}
       <AnimatePresence>
         {showSearch && (
-          <SearchModal
-            onClose={() => setShowSearch(false)}
-            onNavigate={handleSearchNavigate}
-          />
+          <SearchModal onClose={() => setShowSearch(false)} onNavigate={handleSearchNavigate} />
         )}
       </AnimatePresence>
     </div>

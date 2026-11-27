@@ -20,20 +20,23 @@ export default function MessageBubble({
   onImageClick,
   onScrollToReply,
 }) {
-  const [ctx, setCtx]           = useState(null);
+  const [ctx, setCtx] = useState(null);
   const [showReport, setShowReport] = useState(false);
 
-  const setReplyTo        = useChatStore((s) => s.setReplyTo);
+  const setReplyTo = useChatStore((s) => s.setReplyTo);
   const setEditingMessage = useChatStore((s) => s.setEditingMessage);
-  const deleteMessage     = useChatStore((s) => s.deleteMessage);
-  const toggleReaction    = useChatStore((s) => s.toggleReaction);
+  const deleteMessage = useChatStore((s) => s.deleteMessage);
+  const toggleReaction = useChatStore((s) => s.toggleReaction);
 
   const isHidden = msg.deletedFor?.some((id) => String(id) === String(currentUserId));
   if (isHidden) return null;
 
   if (msg.isDeletedForEveryone) {
     return (
-      <div id={`msg-${msg._id}`} className={`flex animate-msg-in ${isMine ? "justify-end" : "justify-start"}`}>
+      <div
+        id={`msg-${msg._id}`}
+        className={`flex animate-msg-in ${isMine ? "justify-end" : "justify-start"}`}
+      >
         <div className="px-4 py-2 rounded-2xl bg-base-300/40 border border-base-300 text-sm text-base-content/30 italic select-none">
           Message deleted
         </div>
@@ -43,26 +46,41 @@ export default function MessageBubble({
 
   const handleContextMenu = (e) => {
     e.preventDefault();
-    const safeX = Math.min(e.clientX, window.innerWidth  - 200);
+    const safeX = Math.min(e.clientX, window.innerWidth - 200);
     const safeY = Math.min(e.clientY, window.innerHeight - 220);
     setCtx({ x: safeX, y: safeY });
   };
 
-  const handleReply       = () => { setReplyTo(msg);        setCtx(null); };
-  const handleEdit        = () => { setEditingMessage(msg); setCtx(null); };
+  const handleReply = () => {
+    setReplyTo(msg);
+    setCtx(null);
+  };
+  const handleEdit = () => {
+    setEditingMessage(msg);
+    setCtx(null);
+  };
   const handleDeleteForMe = async () => {
     setCtx(null);
-    try { await deleteMessage(msg._id, false); }
-    catch { toast.error("Failed to delete"); }
+    try {
+      await deleteMessage(msg._id, false);
+    } catch {
+      toast.error("Failed to delete");
+    }
   };
   const handleDeleteForAll = async () => {
     setCtx(null);
-    try { await deleteMessage(msg._id, true); }
-    catch { toast.error("Failed to delete"); }
+    try {
+      await deleteMessage(msg._id, true);
+    } catch {
+      toast.error("Failed to delete");
+    }
   };
   const handleReact = async (emoji) => {
-    try { await toggleReaction(msg._id, emoji); }
-    catch { toast.error("Failed to react"); }
+    try {
+      await toggleReaction(msg._id, emoji);
+    } catch {
+      toast.error("Failed to react");
+    }
   };
 
   return (
@@ -113,17 +131,23 @@ export default function MessageBubble({
             )}
 
             {/* Text */}
-            {msg.text && (
-              <p className="text-sm leading-relaxed break-words">{msg.text}</p>
-            )}
+            {msg.text && <p className="text-sm leading-relaxed break-words">{msg.text}</p>}
 
             {/* Footer */}
             <div className="flex items-center justify-end gap-1.5 mt-1">
               {msg.isEncrypted && (
-                <span className={`text-[10px] ${isMine ? "text-white/40" : "text-base-content/30"}`}>🔒</span>
+                <span
+                  className={`text-[10px] ${isMine ? "text-white/40" : "text-base-content/30"}`}
+                >
+                  🔒
+                </span>
               )}
               {msg.isEdited && (
-                <span className={`text-[10px] ${isMine ? "text-white/45" : "text-base-content/30"}`}>edited</span>
+                <span
+                  className={`text-[10px] ${isMine ? "text-white/45" : "text-base-content/30"}`}
+                >
+                  edited
+                </span>
               )}
               <span className={`text-[11px] ${isMine ? "text-white/55" : "text-base-content/35"}`}>
                 {formatTime(msg.createdAt)}

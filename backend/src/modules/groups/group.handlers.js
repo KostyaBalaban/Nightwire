@@ -21,7 +21,12 @@ export async function createGroupHandler(req, res) {
     const { name, description, avatar } = req.body;
     if (!name?.trim()) return fail(res, "Group name is required", 400);
 
-    const group = await createGroup({ name: name.trim(), description, avatar, ownerId: req.user._id });
+    const group = await createGroup({
+      name: name.trim(),
+      description,
+      avatar,
+      ownerId: req.user._id,
+    });
     joinGroupRoom(String(req.user._id), group._id);
     return ok(res, { group }, 201);
   } catch (err) {
@@ -36,7 +41,7 @@ export async function getGroupHandler(req, res) {
 
     // Only members may see the member list and invite code
     const isMember = group.members.some(
-      (m) => String(m.userId?._id ?? m.userId) === String(req.user._id)
+      (m) => String(m.userId?._id ?? m.userId) === String(req.user._id),
     );
     if (!isMember) return fail(res, "Not a member", 403);
 
@@ -121,7 +126,8 @@ export async function getGroupMessagesHandler(req, res) {
 
 export async function sendGroupMessageHandler(req, res) {
   try {
-    const { text, image, fileData, fileType, fileName, fileSize, replyTo, replyToSnippet } = req.body;
+    const { text, image, fileData, fileType, fileName, fileSize, replyTo, replyToSnippet } =
+      req.body;
     const groupId = req.params.id;
 
     let resolvedFileUrl = "";
@@ -172,7 +178,11 @@ export async function kickMemberHandler(req, res) {
     const group = await kickMember(req.params.id, req.user._id, req.params.userId);
 
     // System message before removing from room so the kicked user sees it too
-    const sysMsg = await createSystemMessage(req.params.id, req.params.userId, "was removed from the group");
+    const sysMsg = await createSystemMessage(
+      req.params.id,
+      req.params.userId,
+      "was removed from the group",
+    );
     if (sysMsg) getIO().to(`group:${req.params.id}`).emit("group:newMessage", sysMsg);
 
     // Remove kicked user from socket room and notify them

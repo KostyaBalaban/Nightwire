@@ -6,7 +6,13 @@ import prettier from "eslint-config-prettier";
 
 export default [
   {
-    ignores: ["**/node_modules/**", "**/dist/**", "**/coverage/**", "**/playwright-report/**", "**/test-results/**"],
+    ignores: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/coverage/**",
+      "**/playwright-report/**",
+      "**/test-results/**",
+    ],
   },
 
   js.configs.recommended,
@@ -57,7 +63,10 @@ export default [
 
   {
     rules: {
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" }],
+      "no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" },
+      ],
       "no-empty": ["error", { allowEmptyCatch: true }],
     },
   },

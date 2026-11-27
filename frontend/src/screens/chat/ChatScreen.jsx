@@ -1,28 +1,28 @@
 import { useEffect } from "react";
 import { MessageSquare, Users, Shield } from "lucide-react";
-import { useChatStore }    from "../../store/chat.store.js";
-import { useGroupStore }   from "../../store/group.store.js";
+import { useChatStore } from "../../store/chat.store.js";
+import { useGroupStore } from "../../store/group.store.js";
 import { useSessionStore } from "../../store/session.store.js";
-import { useSocket }       from "../../hooks/useSocket.js";
-import ThreadsPanel        from "./ThreadsPanel.jsx";
-import ConvoWindow         from "./ConvoWindow.jsx";
-import GroupsScreen        from "../groups/GroupsScreen.jsx";
-import { useNavigate }     from "react-router-dom";
+import { useSocket } from "../../hooks/useSocket.js";
+import ThreadsPanel from "./ThreadsPanel.jsx";
+import ConvoWindow from "./ConvoWindow.jsx";
+import GroupsScreen from "../groups/GroupsScreen.jsx";
+import { useNavigate } from "react-router-dom";
 
 const NAV = [
-  { id: "dms",    icon: MessageSquare, label: "Messages" },
-  { id: "groups", icon: Users,         label: "Groups"   },
+  { id: "dms", icon: MessageSquare, label: "Messages" },
+  { id: "groups", icon: Users, label: "Groups" },
 ];
 
 export default function ChatScreen() {
-  const fetchUsers     = useChatStore((s) => s.fetchUsers);
-  const fetchPreviews  = useChatStore((s) => s.fetchPreviews);
-  const activeUser     = useChatStore((s) => s.activeUser);
-  const section        = useChatStore((s) => s.chatSection);
-  const setSection     = useChatStore((s) => s.setChatSection);
-  const fetchGroups    = useGroupStore((s) => s.fetchGroups);
-  const user           = useSessionStore((s) => s.user);
-  const navigate       = useNavigate();
+  const fetchUsers = useChatStore((s) => s.fetchUsers);
+  const fetchPreviews = useChatStore((s) => s.fetchPreviews);
+  const activeUser = useChatStore((s) => s.activeUser);
+  const section = useChatStore((s) => s.chatSection);
+  const setSection = useChatStore((s) => s.setChatSection);
+  const fetchGroups = useGroupStore((s) => s.fetchGroups);
+  const user = useSessionStore((s) => s.user);
+  const navigate = useNavigate();
 
   useSocket();
 
@@ -32,12 +32,13 @@ export default function ChatScreen() {
     fetchGroups();
   }, []);
 
-  const navItems = user?.isAdmin
-    ? [...NAV, { id: "admin", icon: Shield, label: "Admin" }]
-    : NAV;
+  const navItems = user?.isAdmin ? [...NAV, { id: "admin", icon: Shield, label: "Admin" }] : NAV;
 
   const handleNav = (id) => {
-    if (id === "admin") { navigate("/admin"); return; }
+    if (id === "admin") {
+      navigate("/admin");
+      return;
+    }
     setSection(id);
   };
 
@@ -66,7 +67,9 @@ export default function ChatScreen() {
         <GroupsScreen />
       ) : (
         <>
-          <div className={`${activeUser ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-shrink-0`}>
+          <div
+            className={`${activeUser ? "hidden md:flex" : "flex"} w-full md:w-80 lg:w-96 flex-shrink-0`}
+          >
             <ThreadsPanel />
           </div>
           <div className={`${!activeUser ? "hidden md:flex" : "flex"} flex-1 min-w-0`}>

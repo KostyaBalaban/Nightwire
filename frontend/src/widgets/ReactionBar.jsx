@@ -33,7 +33,10 @@ export default function ReactionBar({ reactions = [], currentUserId, onReact, is
         </button>
         {showPicker && (
           <EmojiQuickPick
-            onSelect={(e) => { onReact(e); setShowPicker(false); }}
+            onSelect={(e) => {
+              onReact(e);
+              setShowPicker(false);
+            }}
             onClose={() => setShowPicker(false)}
             alignRight={isMine}
           />
@@ -51,7 +54,9 @@ export default function ReactionBar({ reactions = [], currentUserId, onReact, is
   });
 
   return (
-    <div className={`flex flex-wrap gap-1 mt-1 items-center ${isMine ? "justify-end" : "justify-start"}`}>
+    <div
+      className={`flex flex-wrap gap-1 mt-1 items-center ${isMine ? "justify-end" : "justify-start"}`}
+    >
       {Object.entries(grouped).map(([emoji, { count, users }]) => (
         <ReactionGroup
           key={emoji}
@@ -69,7 +74,10 @@ export default function ReactionBar({ reactions = [], currentUserId, onReact, is
       </button>
       {showPicker && (
         <EmojiQuickPick
-          onSelect={(e) => { onReact(e); setShowPicker(false); }}
+          onSelect={(e) => {
+            onReact(e);
+            setShowPicker(false);
+          }}
           onClose={() => setShowPicker(false)}
           alignRight={isMine}
         />
@@ -82,7 +90,9 @@ function EmojiQuickPick({ onSelect, onClose, alignRight }) {
   return (
     <div className="relative z-40">
       <div className="fixed inset-0" onClick={onClose} />
-      <div className={`absolute bottom-8 z-50 bg-base-200 border border-base-300 rounded-2xl shadow-xl p-2 flex gap-1 ${alignRight ? "right-0" : "left-0"}`}>
+      <div
+        className={`absolute bottom-8 z-50 bg-base-200 border border-base-300 rounded-2xl shadow-xl p-2 flex gap-1 ${alignRight ? "right-0" : "left-0"}`}
+      >
         {QUICK_EMOJIS.map((e) => (
           <button
             key={e}

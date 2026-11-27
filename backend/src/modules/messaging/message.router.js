@@ -17,14 +17,14 @@ export const messageRouter = Router();
 messageRouter.use(requireSession);
 
 // Specific paths before /:id
-messageRouter.get("/users",      listUsers);
-messageRouter.get("/previews",   getPreviews);
-messageRouter.get("/search",     searchMsgs);
-messageRouter.get("/:id",        getHistory);
+messageRouter.get("/users", listUsers);
+messageRouter.get("/previews", getPreviews);
+messageRouter.get("/search", searchMsgs);
+messageRouter.get("/:id", getHistory);
 
-messageRouter.post("/send/:id",     sendMessage);
-messageRouter.patch("/:id",         editMsg);
-messageRouter.post("/:id/react",    reactToMessage);
+messageRouter.post("/send/:id", sendMessage);
+messageRouter.patch("/:id", editMsg);
+messageRouter.post("/:id/react", reactToMessage);
 
-messageRouter.delete("/chat/:id",   clearChatHistory);
-messageRouter.delete("/:id",        deleteMsg);
+messageRouter.delete("/chat/:id", clearChatHistory);
+messageRouter.delete("/:id", deleteMsg);

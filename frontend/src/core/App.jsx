@@ -3,15 +3,15 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import AppRouter from "./router.jsx";
 import { useSessionStore } from "../store/session.store.js";
-import { usePrefsStore }   from "../store/prefs.store.js";
-import { useChatStore }    from "../store/chat.store.js";
-import { useGroupStore }   from "../store/group.store.js";
+import { usePrefsStore } from "../store/prefs.store.js";
+import { useChatStore } from "../store/chat.store.js";
+import { useGroupStore } from "../store/group.store.js";
 
 export default function App() {
   const checkSession = useSessionStore((s) => s.checkSession);
-  const isChecking   = useSessionStore((s) => s.isChecking);
-  const theme        = usePrefsStore((s) => s.theme);
-  const fontSize     = usePrefsStore((s) => s.fontSize);
+  const isChecking = useSessionStore((s) => s.isChecking);
+  const theme = usePrefsStore((s) => s.theme);
+  const fontSize = usePrefsStore((s) => s.fontSize);
 
   useEffect(() => {
     // Apply saved theme + font before anything renders
@@ -27,10 +27,7 @@ export default function App() {
     });
 
     // Request push permission if previously granted
-    if (
-      "Notification" in window &&
-      Notification.permission === "granted"
-    ) {
+    if ("Notification" in window && Notification.permission === "granted") {
       usePrefsStore.getState().setPushEnabled?.(true) ??
         usePrefsStore.setState({ pushEnabled: true });
     }

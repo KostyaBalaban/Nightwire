@@ -11,8 +11,7 @@ export default function LoginScreen() {
   const login = useSessionStore((s) => s.login);
   const navigate = useNavigate();
 
-  const set = (e) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const set = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,7 +36,7 @@ export default function LoginScreen() {
               key={i}
               className="absolute rounded-full border border-ember-500/10"
               style={{
-                width:  `${(i + 1) * 80}px`,
+                width: `${(i + 1) * 80}px`,
                 height: `${(i + 1) * 80}px`,
                 top: "50%",
                 left: "50%",
@@ -52,14 +51,11 @@ export default function LoginScreen() {
             <div className="w-12 h-12 bg-ember-500 rounded-2xl flex items-center justify-center shadow-lg shadow-ember-500/30">
               <Zap size={26} className="text-white" />
             </div>
-            <span className="text-3xl font-bold tracking-tight text-base-content">
-              NightWire
-            </span>
+            <span className="text-3xl font-bold tracking-tight text-base-content">NightWire</span>
           </div>
 
           <p className="text-base-content/50 text-base leading-relaxed max-w-xs">
-            Real-time messaging with a warm, distinctive feel. No noise — just
-            your conversations.
+            Real-time messaging with a warm, distinctive feel. No noise — just your conversations.
           </p>
 
           <div className="grid grid-cols-2 gap-3 mt-8">
@@ -91,12 +87,8 @@ export default function LoginScreen() {
               <span className="text-xl font-bold">NightWire</span>
             </div>
 
-            <h1 className="text-2xl font-bold text-base-content mb-1">
-              Welcome back
-            </h1>
-            <p className="text-base-content/50 text-sm mb-8">
-              Sign in to continue
-            </p>
+            <h1 className="text-2xl font-bold text-base-content mb-1">Welcome back</h1>
+            <p className="text-base-content/50 text-sm mb-8">Sign in to continue</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -141,16 +133,8 @@ export default function LoginScreen() {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="btn btn-primary w-full mt-2"
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="loading loading-spinner loading-sm" />
-                ) : (
-                  "Sign in"
-                )}
+              <button type="submit" className="btn btn-primary w-full mt-2" disabled={loading}>
+                {loading ? <span className="loading loading-spinner loading-sm" /> : "Sign in"}
               </button>
             </form>
 

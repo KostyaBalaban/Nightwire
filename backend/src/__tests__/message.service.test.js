@@ -1,11 +1,11 @@
 import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 
 const MockMessage = {
-  create:    jest.fn(),
-  findById:  jest.fn(),
+  create: jest.fn(),
+  findById: jest.fn(),
 };
 
-const mockUploadToVault     = jest.fn();
+const mockUploadToVault = jest.fn();
 const mockUploadFileToVault = jest.fn();
 
 jest.unstable_mockModule("../modules/messaging/message.schema.js", () => ({
@@ -13,13 +13,12 @@ jest.unstable_mockModule("../modules/messaging/message.schema.js", () => ({
 }));
 jest.unstable_mockModule("../modules/auth/user.schema.js", () => ({ User: {} }));
 jest.unstable_mockModule("../vault/vault.js", () => ({
-  uploadToVault:     mockUploadToVault,
+  uploadToVault: mockUploadToVault,
   uploadFileToVault: mockUploadFileToVault,
 }));
 
-const { createMessage, editMessage, toggleReaction } = await import(
-  "../modules/messaging/message.service.js"
-);
+const { createMessage, editMessage, toggleReaction } =
+  await import("../modules/messaging/message.service.js");
 
 function makeMsg(senderId, extraFields = {}) {
   return {
@@ -46,7 +45,7 @@ describe("createMessage", () => {
     const result = await createMessage({ senderId: "u1", receiverId: "u2", text: "hello" });
 
     expect(MockMessage.create).toHaveBeenCalledWith(
-      expect.objectContaining({ senderId: "u1", receiverId: "u2", text: "hello" })
+      expect.objectContaining({ senderId: "u1", receiverId: "u2", text: "hello" }),
     );
     expect(result).toEqual(expected);
   });

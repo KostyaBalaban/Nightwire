@@ -1,6 +1,6 @@
-const RSA_ALG  = "RSA-OAEP";
+const RSA_ALG = "RSA-OAEP";
 const RSA_HASH = "SHA-256";
-const AES_ALG  = "AES-GCM";
+const AES_ALG = "AES-GCM";
 const KEY_SIZE = 256;
 import { useSessionStore } from "../store/session.store.js";
 
@@ -11,16 +11,21 @@ function pkKey() {
 
 export async function generateKeyPair() {
   const keyPair = await crypto.subtle.generateKey(
-    { name: RSA_ALG, modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: RSA_HASH },
+    {
+      name: RSA_ALG,
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: RSA_HASH,
+    },
     true,
-    ["encrypt", "decrypt"]
+    ["encrypt", "decrypt"],
   );
 
-  const publicKeyJwk  = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+  const publicKeyJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
   const privateKeyJwk = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
 
   return {
-    publicKey:  JSON.stringify(publicKeyJwk),
+    publicKey: JSON.stringify(publicKeyJwk),
     privateKey: JSON.stringify(privateKeyJwk),
   };
 }
@@ -51,7 +56,9 @@ export function cacheSentPlaintext(messageId, plaintext) {
     // keep last 1000 entries to avoid bloat
     const trimmed = entries.length > 1000 ? Object.fromEntries(entries.slice(-1000)) : cache;
     localStorage.setItem(k, JSON.stringify(trimmed));
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
 }
 
 export function loadSentPlaintext(messageId) {
@@ -60,7 +67,9 @@ export function loadSentPlaintext(messageId) {
     if (!k) return null;
     const cache = JSON.parse(localStorage.getItem(k) || "{}");
     return cache[String(messageId)] ?? null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 async function importPublicKey(jwkString) {
@@ -69,7 +78,7 @@ async function importPublicKey(jwkString) {
     JSON.parse(jwkString),
     { name: RSA_ALG, hash: RSA_HASH },
     true,
-    ["encrypt"]
+    ["encrypt"],
   );
 }
 
@@ -79,7 +88,7 @@ async function importPrivateKey(jwkString) {
     JSON.parse(jwkString),
     { name: RSA_ALG, hash: RSA_HASH },
     true,
-    ["decrypt"]
+    ["decrypt"],
   );
 }
 
@@ -88,16 +97,18 @@ export async function encryptMessage(plaintext, recipientPublicKeyJwk) {
   if (!recipientPublicKeyJwk) throw new Error("No public key");
 
   // 1. Generate ephemeral AES key
-  const aesKey = await crypto.subtle.generateKey({ name: AES_ALG, length: KEY_SIZE }, true, ["encrypt"]);
+  const aesKey = await crypto.subtle.generateKey({ name: AES_ALG, length: KEY_SIZE }, true, [
+    "encrypt",
+  ]);
   const iv = crypto.getRandomValues(new Uint8Array(12));
 
   // 2. Encrypt plaintext
-  const encoded  = new TextEncoder().encode(plaintext);
-  const encData  = await crypto.subtle.encrypt({ name: AES_ALG, iv }, aesKey, encoded);
+  const encoded = new TextEncoder().encode(plaintext);
+  const encData = await crypto.subtle.encrypt({ name: AES_ALG, iv }, aesKey, encoded);
 
   // 3. Encrypt AES key with RSA
-  const rawAes    = await crypto.subtle.exportKey("raw", aesKey);
-  const pubKey    = await importPublicKey(recipientPublicKeyJwk);
+  const rawAes = await crypto.subtle.exportKey("raw", aesKey);
+  const pubKey = await importPublicKey(recipientPublicKeyJwk);
   const encAesKey = await crypto.subtle.encrypt({ name: RSA_ALG }, pubKey, rawAes);
 
   // 4. Pack: [4 bytes keyLen][encAesKey][12 bytes iv][encData]
@@ -114,17 +125,19 @@ export async function decryptMessage(encryptedBase64, privateKeyJwk) {
   if (!privateKeyJwk) return "[No private key — cannot decrypt]";
   try {
     const combined = Uint8Array.from(atob(encryptedBase64), (c) => c.charCodeAt(0));
-    const view     = new DataView(combined.buffer);
+    const view = new DataView(combined.buffer);
 
-    const keyLen    = view.getUint32(0, false);
+    const keyLen = view.getUint32(0, false);
     const encAesKey = combined.slice(4, 4 + keyLen);
-    const iv        = combined.slice(4 + keyLen, 4 + keyLen + 12);
-    const encData   = combined.slice(4 + keyLen + 12);
+    const iv = combined.slice(4 + keyLen, 4 + keyLen + 12);
+    const encData = combined.slice(4 + keyLen + 12);
 
-    const privKey   = await importPrivateKey(privateKeyJwk);
-    const rawAes    = await crypto.subtle.decrypt({ name: RSA_ALG }, privKey, encAesKey);
+    const privKey = await importPrivateKey(privateKeyJwk);
+    const rawAes = await crypto.subtle.decrypt({ name: RSA_ALG }, privKey, encAesKey);
 
-    const aesKey    = await crypto.subtle.importKey("raw", rawAes, { name: AES_ALG }, false, ["decrypt"]);
+    const aesKey = await crypto.subtle.importKey("raw", rawAes, { name: AES_ALG }, false, [
+      "decrypt",
+    ]);
     const decrypted = await crypto.subtle.decrypt({ name: AES_ALG, iv }, aesKey, encData);
 
     return new TextDecoder().decode(decrypted);

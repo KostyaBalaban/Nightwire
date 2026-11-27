@@ -23,8 +23,7 @@ export async function createAccount({ fullName, email, password, publicKey }) {
   const exists = await User.findOne({ email });
   if (exists) throw { status: 409, message: "Email already in use" };
 
-  if (password.length < 6)
-    throw { status: 400, message: "Password must be at least 6 characters" };
+  if (password.length < 6) throw { status: 400, message: "Password must be at least 6 characters" };
 
   const hashed = await bcrypt.hash(password, 12);
 
@@ -54,7 +53,9 @@ export async function generateVerificationCode(userId) {
 }
 
 export async function verifyEmailCode(userId, code) {
-  const user = await User.findById(userId).select("+emailVerificationCode +emailVerificationExpiry");
+  const user = await User.findById(userId).select(
+    "+emailVerificationCode +emailVerificationExpiry",
+  );
   if (!user) throw { status: 404, message: "User not found" };
   if (user.emailVerified) throw { status: 400, message: "Email already verified" };
 

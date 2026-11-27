@@ -5,16 +5,16 @@ import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios.js";
 
 const REASONS = [
-  { value: "spam",              label: "Spam or unwanted messages" },
-  { value: "harassment",        label: "Harassment or threats" },
+  { value: "spam", label: "Spam or unwanted messages" },
+  { value: "harassment", label: "Harassment or threats" },
   { value: "forbidden_content", label: "Prohibited content" },
-  { value: "other",             label: "Other" },
+  { value: "other", label: "Other" },
 ];
 
 export default function ReportModal({ targetType, targetId, onClose }) {
-  const [reason, setReason]     = useState("");
-  const [description, setDesc]  = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [reason, setReason] = useState("");
+  const [description, setDesc] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,8 +36,8 @@ export default function ReportModal({ targetType, targetId, onClose }) {
       <div className="fixed inset-0 bg-black/60 z-[9998]" onClick={onClose} />
       <motion.div
         initial={{ opacity: 0, scale: 0.92, y: 20 }}
-        animate={{ opacity: 1, scale: 1,    y: 0  }}
-        exit={{ opacity: 0, scale: 0.92,    y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.92, y: 20 }}
         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-full max-w-sm bg-base-200 border border-base-300 rounded-2xl shadow-2xl p-6"
       >
         <div className="flex items-center justify-between mb-5">
@@ -53,7 +53,10 @@ export default function ReportModal({ targetType, targetId, onClose }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             {REASONS.map((r) => (
-              <label key={r.value} className="flex items-center gap-3 cursor-pointer p-2.5 rounded-xl hover:bg-base-300 transition-colors">
+              <label
+                key={r.value}
+                className="flex items-center gap-3 cursor-pointer p-2.5 rounded-xl hover:bg-base-300 transition-colors"
+              >
                 <input
                   type="radio"
                   name="reason"
@@ -80,11 +83,7 @@ export default function ReportModal({ targetType, targetId, onClose }) {
             <button type="button" onClick={onClose} className="btn btn-ghost flex-1">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={loading || !reason}
-              className="btn btn-error flex-1"
-            >
+            <button type="submit" disabled={loading || !reason} className="btn btn-error flex-1">
               {loading ? <span className="loading loading-spinner loading-xs" /> : "Submit Report"}
             </button>
           </div>

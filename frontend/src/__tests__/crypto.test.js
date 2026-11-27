@@ -15,7 +15,7 @@ describe("generateKeyPair", () => {
     expect(typeof publicKey).toBe("string");
     expect(typeof privateKey).toBe("string");
 
-    const pub  = JSON.parse(publicKey);
+    const pub = JSON.parse(publicKey);
     const priv = JSON.parse(privateKey);
 
     expect(pub.kty).toBe("RSA");
@@ -31,7 +31,7 @@ describe("encrypt / decrypt", () => {
 
   test("setup — generate key pair", async () => {
     const pair = await generateKeyPair();
-    publicKey  = pair.publicKey;
+    publicKey = pair.publicKey;
     privateKey = pair.privateKey;
     expect(publicKey).toBeTruthy();
     expect(privateKey).toBeTruthy();
@@ -47,7 +47,7 @@ describe("encrypt / decrypt", () => {
   });
 
   test("shouldDecryptMessage — round-trip recovers the original plaintext", async () => {
-    const pair      = await generateKeyPair();
+    const pair = await generateKeyPair();
     const plaintext = "secret message 🔒";
     const encrypted = await encryptMessage(plaintext, pair.publicKey);
     const decrypted = await decryptMessage(encrypted, pair.privateKey);
@@ -56,18 +56,18 @@ describe("encrypt / decrypt", () => {
   });
 
   test("shouldDecryptMessage — returns error string when private key is missing", async () => {
-    const pair      = await generateKeyPair();
+    const pair = await generateKeyPair();
     const encrypted = await encryptMessage("test", pair.publicKey);
-    const result    = await decryptMessage(encrypted, null);
+    const result = await decryptMessage(encrypted, null);
 
     expect(result).toBe("[No private key — cannot decrypt]");
   });
 
   test("shouldDecryptMessage — returns error string when private key is wrong", async () => {
-    const pair1     = await generateKeyPair();
-    const pair2     = await generateKeyPair();
+    const pair1 = await generateKeyPair();
+    const pair2 = await generateKeyPair();
     const encrypted = await encryptMessage("test", pair1.publicKey);
-    const result    = await decryptMessage(encrypted, pair2.privateKey);
+    const result = await decryptMessage(encrypted, pair2.privateKey);
 
     expect(result).toBe("[Could not decrypt message]");
   });

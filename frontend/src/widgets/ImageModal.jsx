@@ -11,16 +11,15 @@ export default function ImageModal({ src, images = [], onClose }) {
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === "Escape")     onClose();
-      if (e.key === "ArrowLeft")  go(-1);
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") go(-1);
       if (e.key === "ArrowRight") go(1);
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [idx]);
 
-  const go = (dir) =>
-    setIdx((i) => (i + dir + images.length) % images.length);
+  const go = (dir) => setIdx((i) => (i + dir + images.length) % images.length);
 
   const handleDownload = () => {
     const a = document.createElement("a");
@@ -39,10 +38,7 @@ export default function ImageModal({ src, images = [], onClose }) {
       onClick={onClose}
     >
       {/* Controls top-right */}
-      <div
-        className="absolute top-4 right-4 flex gap-2 z-10"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="absolute top-4 right-4 flex gap-2 z-10" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={handleDownload}
           className="btn btn-circle btn-sm bg-white/10 border-none hover:bg-white/20 text-white"
@@ -78,13 +74,19 @@ export default function ImageModal({ src, images = [], onClose }) {
         <>
           <button
             className="absolute left-4 btn btn-circle btn-sm bg-white/10 border-none hover:bg-white/20 text-white"
-            onClick={(e) => { e.stopPropagation(); go(-1); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              go(-1);
+            }}
           >
             <ChevronLeft size={18} />
           </button>
           <button
             className="absolute right-4 btn btn-circle btn-sm bg-white/10 border-none hover:bg-white/20 text-white"
-            onClick={(e) => { e.stopPropagation(); go(1); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              go(1);
+            }}
           >
             <ChevronRight size={18} />
           </button>

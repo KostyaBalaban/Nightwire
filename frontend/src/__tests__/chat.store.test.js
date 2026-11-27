@@ -2,19 +2,19 @@ import { vi, describe, test, expect, beforeEach } from "vitest";
 
 vi.mock("../lib/axios.js", () => ({
   axiosInstance: {
-    get:    vi.fn(),
-    post:   vi.fn(),
-    patch:  vi.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+    patch: vi.fn(),
     delete: vi.fn(),
   },
 }));
 
 vi.mock("../lib/crypto.js", () => ({
-  decryptMessage:      vi.fn(),
-  encryptMessage:      vi.fn().mockResolvedValue("CIPHERTEXT"),
-  loadPrivateKey:      vi.fn().mockReturnValue(null),
-  cacheSentPlaintext:  vi.fn(),
-  loadSentPlaintext:   vi.fn().mockReturnValue(null),
+  decryptMessage: vi.fn(),
+  encryptMessage: vi.fn().mockResolvedValue("CIPHERTEXT"),
+  loadPrivateKey: vi.fn().mockReturnValue(null),
+  cacheSentPlaintext: vi.fn(),
+  loadSentPlaintext: vi.fn().mockReturnValue(null),
 }));
 
 vi.mock("../store/session.store.js", () => ({
@@ -28,11 +28,11 @@ import { axiosInstance } from "../lib/axios.js";
 import { encryptMessage, cacheSentPlaintext, loadSentPlaintext } from "../lib/crypto.js";
 
 const INITIAL = {
-  messages:     [],
-  activeUser:   null,
+  messages: [],
+  activeUser: null,
   unreadCounts: {},
-  previews:     {},
-  typingUsers:  new Set(),
+  previews: {},
+  typingUsers: new Set(),
 };
 
 beforeEach(() => {
@@ -106,7 +106,9 @@ describe("E2E: no plaintext leaks to the server", () => {
       activeUser: { _id: "user2", publicKey: "PUB" },
       messages: [{ _id: "m1", senderId: "user1", text: "old", isEncrypted: true }],
     });
-    axiosInstance.patch.mockResolvedValueOnce({ data: { message: { _id: "m1", isEdited: true, editedAt: "t" } } });
+    axiosInstance.patch.mockResolvedValueOnce({
+      data: { message: { _id: "m1", isEdited: true, editedAt: "t" } },
+    });
 
     await useChatStore.getState().editMessage("m1", "new secret");
 
@@ -136,9 +138,13 @@ describe("E2E: no plaintext leaks to the server", () => {
       messages: [],
       replyTo: { _id: "q1", text: "quoted secret", isEncrypted: true },
     });
-    axiosInstance.post.mockResolvedValueOnce({ data: { message: { _id: "m3", isEncrypted: true, replyTo: { _id: "q1" } } } });
+    axiosInstance.post.mockResolvedValueOnce({
+      data: { message: { _id: "m3", isEncrypted: true, replyTo: { _id: "q1" } } },
+    });
 
-    await useChatStore.getState().sendMessage({ text: "CIPHERTEXT", isEncrypted: true, _localText: "reply" });
+    await useChatStore
+      .getState()
+      .sendMessage({ text: "CIPHERTEXT", isEncrypted: true, _localText: "reply" });
 
     const body = axiosInstance.post.mock.calls.at(-1)[1];
     expect(body.replyToSnippet).toBeUndefined();
@@ -148,7 +154,10 @@ describe("E2E: no plaintext leaks to the server", () => {
   test("decryptForDisplay — resolves a quote of my own encrypted message from the local cache", async () => {
     loadSentPlaintext.mockReturnValueOnce("my original text");
     const msg = {
-      _id: "m4", senderId: "user2", text: "", isEncrypted: false,
+      _id: "m4",
+      senderId: "user2",
+      text: "",
+      isEncrypted: false,
       replyTo: { _id: "q2", senderId: "user1", text: "CIPHERTEXT", isEncrypted: true },
     };
 
