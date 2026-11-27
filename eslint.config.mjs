@@ -61,6 +61,12 @@ export default [
     languageOptions: { globals: globals.node },
   },
 
+  // Playwright end-to-end tests (Node, plus browser code inside page.evaluate)
+  {
+    files: ["e2e/**/*.{js,mjs}"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+
   {
     rules: {
       "no-unused-vars": [
