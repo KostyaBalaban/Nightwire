@@ -1,10 +1,14 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Email is optional: without RESEND_API_KEY (local dev, CI, demo) sending is skipped
+// instead of crashing at import time, which is what `new Resend(undefined)` does.
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+if (!resend) console.warn("[Mailer] RESEND_API_KEY is not set: emails are disabled");
 
 const FROM = `${process.env.EMAIL_FROM_NAME || "NightWire"} <${process.env.EMAIL_FROM}>`;
 
 export async function sendWelcomeEmail(toEmail, fullName) {
+  if (!resend) return;
   try {
     await resend.emails.send({
       from: FROM,
@@ -28,6 +32,7 @@ export async function sendWelcomeEmail(toEmail, fullName) {
 }
 
 export async function sendVerificationEmail(toEmail, fullName, code) {
+  if (!resend) return;
   try {
     await resend.emails.send({
       from: FROM,
