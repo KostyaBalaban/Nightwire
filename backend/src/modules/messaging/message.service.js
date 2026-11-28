@@ -99,6 +99,10 @@ export async function searchMessages(userId, query) {
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return Message.find({
     $or: [{ senderId: userId }, { receiverId: userId }],
+    // 1:1 messages only: group messages have no partner to open in the search results
+    groupId: null,
+    // encrypted text is ciphertext on the server; matching it would return random hits
+    isEncrypted: { $ne: true },
     text: { $regex: escaped, $options: "i" },
     isDeletedForEveryone: { $ne: true },
   })
@@ -143,6 +147,8 @@ export async function getConversationPreviews(userId) {
     {
       $match: {
         $or: [{ senderId: uid }, { receiverId: uid }],
+        // group messages have no receiverId and are previewed in the groups list instead
+        groupId: null,
       },
     },
     { $sort: { createdAt: -1 } },

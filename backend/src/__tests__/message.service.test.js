@@ -3,6 +3,7 @@ import { jest, describe, test, expect, beforeEach } from "@jest/globals";
 const MockMessage = {
   create: jest.fn(),
   findById: jest.fn(),
+  find: jest.fn(),
 };
 
 const mockUploadToVault = jest.fn();
@@ -17,7 +18,7 @@ jest.unstable_mockModule("../vault/vault.js", () => ({
   uploadFileToVault: mockUploadFileToVault,
 }));
 
-const { createMessage, editMessage, toggleReaction } =
+const { createMessage, editMessage, toggleReaction, searchMessages } =
   await import("../modules/messaging/message.service.js");
 
 function makeMsg(senderId, extraFields = {}) {
@@ -99,5 +100,25 @@ describe("toggleReaction", () => {
 
     expect(msg.reactions).toHaveLength(0);
     expect(msg.save).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("searchMessages", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test("shouldSearchOnlyReadableDirectMessages — skips group and encrypted messages", async () => {
+    const chain = {
+      populate: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockResolvedValue([]),
+    };
+    MockMessage.find.mockReturnValue(chain);
+
+    await searchMessages("u1", "a.b");
+
+    const query = MockMessage.find.mock.calls[0][0];
+    expect(query.groupId).toBeNull();
+    expect(query.isEncrypted).toEqual({ $ne: true });
+    expect(query.text).toEqual({ $regex: "a\\.b", $options: "i" });
   });
 });
