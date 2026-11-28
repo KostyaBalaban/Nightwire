@@ -23,6 +23,8 @@ test("login with a wrong password is rejected", async ({ page }) => {
   const user = makeUser("Bob");
   await signUp(page, user);
   await page.getByTitle("Log out").click();
+  // Wait for the logout request to finish; navigating away earlier would cancel it.
+  await expect(page).toHaveURL(/\/login$/);
 
   await logIn(page, { ...user, password: "wrong-password" });
 
